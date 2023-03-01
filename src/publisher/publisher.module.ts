@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { PublisherService } from './publisher.service';
+import { PrismaService } from 'prisma/prisma.service';
 import { PublisherController } from './publisher.controller';
+import { PublisherService } from './publisher.service';
 
 @Module({
-  providers: [PublisherService],
-  controllers: [PublisherController]
+  providers: [PublisherService, PrismaService],
+  controllers: [PublisherController],
 })
 export class PublisherModule {}
