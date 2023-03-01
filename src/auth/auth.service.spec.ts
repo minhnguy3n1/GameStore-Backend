@@ -1,4 +1,8 @@
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+import { describe } from 'node:test';
+import { UserService } from 'src/user/user.service';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
@@ -16,3 +20,24 @@ describe('AuthService', () => {
     expect(service).toBeDefined();
   });
 });
+
+
+describe('The Authentication Service', () => {
+  let authencationService: AuthService;
+  beforeEach(() => {
+    authencationService = new AuthService(
+      new UserService(new Repository<User>()),
+      new JwtService({
+        secretOrPrivateKey: '7A125D673E2D5E29'
+      }),
+      new ConfigService()
+    );
+    describe('when creating a cookie', () => {
+    it('should return a string', () => {
+      const userId = 1;
+      expect(
+        typeof authenticationService.(userId)
+      ).toEqual('string')
+    })
+  })
+})

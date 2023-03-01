@@ -3,26 +3,22 @@ import {
   Controller,
   Delete,
   Get,
-  HttpException,
-  HttpStatus,
   Ip,
   Param,
   Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import RefreshTokenDto from './dto/refresh-token.dto';
-import { LoginDto } from './dto/login.dto';
-import { LocalAuthGuard } from './guards/local-auth.guard';
-import { CreateUserInput } from './dto/create-user.input';
-import { UserService } from 'src/user/user.service';
-import { CheckUserInput } from './dto/check-user.input';
-import { Roles } from 'src/decorater/roles.decorator';
-import { Role } from 'src/user/entities/role.enum';
 import { EmailverifyService } from 'src/emailverify/emailverify.service';
-import { JwtAuthGuardApi } from './guards/jwt-auth.guard';
+import { UserService } from 'src/user/user.service';
+import { AuthService } from './auth.service';
+import { CheckUserInput } from './dto/check-user.input';
+import { CreateUserInput } from './dto/create-user.input';
+import { LoginDto } from './dto/login.dto';
+import RefreshTokenDto from './dto/refresh-token.dto';
 import SetNewPasswordDto from './dto/set-new-password.input';
+import { JwtAuthGuardApi } from './guards/jwt-auth.guard';
+import { LocalAuthGuard } from './guards/local-auth.guard';
 
 @Controller('auth')
 export class AuthController {

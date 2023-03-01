@@ -1,9 +1,10 @@
+/* eslint-disable prettier/prettier */
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
-import { UserService } from './user.service';
-import { Roles } from 'src/decorater/roles.decorator';
 import { AuthGuard } from '@nestjs/passport';
+import { Roles } from 'src/user/decorator/roles.decorator';
 import { RolesGuard } from 'src/user/guards/roles.guard';
 import { Role } from './entities/role.enum';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {

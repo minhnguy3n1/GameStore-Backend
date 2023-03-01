@@ -1,7 +1,7 @@
 export const CONSTANTS = {
   ROLES: {
     SELLER: 'Seller',
-    BUYER: 'Buyer',
+    CUSTOMER: 'Customer',
     ADMINSTRATOR: 'Adminstrator',
   },
 };

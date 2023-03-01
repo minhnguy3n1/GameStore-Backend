@@ -1,11 +1,14 @@
+/* eslint-disable prettier/prettier */
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
+import { CategoryModule } from './category/category.module';
 import { EmailverifyModule } from './emailverify/emailverify.module';
-import { UserModule } from './user/user.module';
 import { ProductModule } from './product/product.module';
+import { PublisherModule } from './publisher/publisher.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -28,6 +31,8 @@ import { ProductModule } from './product/product.module';
     }),
     EmailverifyModule,
     ProductModule,
+    CategoryModule,
+    PublisherModule,
   ],
 })
 export class AppModule {}

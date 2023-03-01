@@ -21,14 +21,53 @@ model User {
   phone            String   @unique
   address          String
   dateOfBirth      DateTime @default(now())
-  createdAt         DateTime @default(now())
+  createdAt        DateTime @default(now())
 
-  roles         String[]      @default(["Customer"])
+  roles String[] @default(["Customer"])
 }
-
 
 model RefeshToken {
   id    Int    @id @default(autoincrement())
   token String
 }
 
+model Product {
+  id          Int    @id @default(autoincrement())
+  productName String @unique
+
+  publisherId Int
+  publisher   Publisher @relation(fields: [publisherId], references: [id])
+
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id])
+}
+
+model Publisher {
+  id            Int       @id @default(autoincrement())
+  publisherName String    @unique
+  Product       Product[]
+}
+
+model Category {
+  id           Int       @id @default(autoincrement())
+  categoryName String    @unique
+  Product      Product[]
+}
+
+model Code {
+  id              Int           @id @default(autoincrement())
+  code            String
+  productOptionId Int
+  productOption   ProductOption @relation(fields: [productOptionId], references: [id])
+}
+
+model ProductOption {
+  id          Int     @id @default(autoincrement())
+  optionName  String
+  Price       Decimal
+  Description String
+  Status      String
+  Avatar      String
+
+  Code Code[]
+}
