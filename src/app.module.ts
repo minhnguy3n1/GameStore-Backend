@@ -1,3 +1,5 @@
+import { PrismaService } from './../prisma/prisma.service';
+/* eslint-disable prettier/prettier */
 import { MailerModule } from '@nestjs-modules/mailer';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { Module } from '@nestjs/common';
@@ -6,6 +8,9 @@ import { AuthModule } from './auth/auth.module';
 import { EmailverifyModule } from './emailverify/emailverify.module';
 import { UserModule } from './user/user.module';
 import { ProductModule } from './product/product.module';
+import { CategoryModule } from './category/category.module';
+import { PublisherModule } from './publisher/publisher.module';
+import { CategoryService } from './category/category.service';
 
 @Module({
   imports: [
@@ -28,6 +33,9 @@ import { ProductModule } from './product/product.module';
     }),
     EmailverifyModule,
     ProductModule,
+    CategoryModule,
+    PublisherModule,
   ],
+  providers: [PrismaService],
 })
 export class AppModule {}

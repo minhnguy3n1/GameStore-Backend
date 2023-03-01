@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   BadRequestException,
   HttpException,
@@ -17,7 +18,7 @@ export class UserService {
   constructor(private prisma: PrismaService) {}
 
   async findAll() {
-    return this.prisma.user.findMany({
+    return await this.prisma.user.findMany({
       select: {
         username: true,
         email: true,
@@ -27,7 +28,7 @@ export class UserService {
   }
 
   async findOne(id: number): Promise<User> {
-    return this.prisma.user.findUnique({
+    return await this.prisma.user.findUnique({
       where: {
         id: id,
       },
@@ -35,7 +36,7 @@ export class UserService {
   }
 
   async findByEmail(email: string): Promise<User> {
-    return this.prisma.user.findFirst({
+    return await this.prisma.user.findFirst({
       where: {
         email,
       },
