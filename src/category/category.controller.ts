@@ -18,7 +18,7 @@ export class CategoryController {
   constructor(private categoryService: CategoryService) {}
 
   @Get()
-  getCategories() {
+  getAllCategories() {
     return this.categoryService.getAllCategories();
   }
 

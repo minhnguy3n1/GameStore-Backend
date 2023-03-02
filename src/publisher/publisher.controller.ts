@@ -18,7 +18,7 @@ export class PublisherController {
   constructor(private publisherService: PublisherService) {}
 
   @Get()
-  getPublishers() {
+  getAllPublishers() {
     return this.publisherService.getAllPublishers();
   }
 
