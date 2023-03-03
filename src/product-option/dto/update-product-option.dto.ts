@@ -1,7 +1,7 @@
 /* eslint-disable prettier/prettier */
 
 import { IsNotEmpty, IsString } from 'class-validator';
-export class CreateProductOptionDto {
+export class UpdateProductOptionDto {
   @IsString()
   @IsNotEmpty()
   optionName: string;
