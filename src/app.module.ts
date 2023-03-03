@@ -10,6 +10,9 @@ import { EmailverifyModule } from './emailverify/emailverify.module';
 import { ProductModule } from './product/product.module';
 import { PublisherModule } from './publisher/publisher.module';
 import { UserModule } from './user/user.module';
+import { ProductOptionService } from './product-option/product-option.service';
+import { ProductOptionModule } from './product-option/product-option.module';
+import { ProductStatusModule } from './product-status/product-status.module';
 
 @Module({
   imports: [
@@ -34,7 +37,9 @@ import { UserModule } from './user/user.module';
     ProductModule,
     CategoryModule,
     PublisherModule,
+    ProductOptionModule,
+    ProductStatusModule,
   ],
-  providers: [PrismaService],
+  providers: [PrismaService, ProductOptionService],
 })
 export class AppModule {}

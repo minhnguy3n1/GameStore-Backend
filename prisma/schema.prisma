@@ -39,7 +39,7 @@ model Product {
   publisher   Publisher? @relation(fields: [publisherId], references: [id])
 
   categoryId    Int
-  category      Category?        @relation(fields: [categoryId], references: [id])
+  category      Category?       @relation(fields: [categoryId], references: [id])
   ProductOption ProductOption[]
 }
 
@@ -63,13 +63,21 @@ model Code {
 }
 
 model ProductOption {
-  id          Int     @id @default(autoincrement())
-  optionName  String
-  Price       Float
-  Description String
-  Status      String
-  Avatar      String
-  productId   Int
-  product     Product @relation(fields: [productId], references: [id])
-  Code        Code[]
+  id               Int           @id @default(autoincrement())
+  optionName       String
+  price            Float
+  description      String
+  
+  avatar           String
+  productId        Int
+  product          Product       @relation(fields: [productId], references: [id])
+  statusId         Int
+  productStatus ProductStatus @relation(fields: [statusId], references: [id])
+  Code             Code[]
+}
+
+model ProductStatus {
+  id         Int    @id @default(autoincrement())
+  statusName String
+  productOption ProductOption[]
 }
