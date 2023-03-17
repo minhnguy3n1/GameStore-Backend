@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { sign } from 'jsonwebtoken';
 
 class RefreshToken {

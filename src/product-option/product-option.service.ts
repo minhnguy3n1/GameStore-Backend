@@ -15,7 +15,7 @@ export class ProductOptionService {
     return this.prisma.productOption.create({
       data: {
         optionName: optionName,
-        price: price,
+        price: Number(price),
         description: description,
         avatar: avatar,
         productStatus: {
@@ -67,7 +67,7 @@ export class ProductOptionService {
       },
       data: {
         optionName: optionName,
-        price: price,
+        price: Number(price) ,
         description: description,
         avatar: avatar,
         productStatus: {

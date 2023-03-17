@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/no-empty-function */
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { MailerService } from '@nestjs-modules/mailer';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { sign, verify } from 'jsonwebtoken';
@@ -30,7 +30,7 @@ export class EmailverifyService {
         from: 'minhnngcd191326@fpt.edu.vn',
         subject: 'Welcome to Game Store',
         text: 'Welcome',
-        html: `<b>Welcome to Game Store</b></br><p>Hi ${lastName}, Let's confirm your email address.</p></br><a href="${url}">Cofirm Email Address</a>`,
+        html: `<b>Welcome to Game Store</b></br><p>Hi ${lastName}, Let's confirm your email address.</p></br><a href="${url}">Confirm Email Address</a>`,
       })
       .then(() => {})
       .catch(() => {});

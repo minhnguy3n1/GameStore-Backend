@@ -1,3 +1,5 @@
+import { EmailDto } from './dto/check-email.input';
+/* eslint-disable prettier/prettier */
 import {
   Body,
   Controller,
@@ -31,7 +33,7 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Req() request, @Ip() ip: string, @Body() body: LoginDto) {
-    return this.authService.login(body.username, body.password, {
+    return this.authService.login(body.email, {
       ipAddress: ip,
       userAgent: request.headers['user-agent'],
     });
@@ -40,6 +42,12 @@ export class AuthController {
   @Post('checkregister')
   async checkInputRegister(@Body() checkUserInput: CheckUserInput) {
     return this.userService.checkCreateUser(checkUserInput);
+  }
+
+  @UseGuards(JwtAuthGuardApi)
+  @Get('me')
+  async reload(@Req() request) {
+    return this.userService.getUserById(request.user.userId);
   }
 
   @Post('register')
@@ -63,10 +71,10 @@ export class AuthController {
     return this.authService.logout(body.refreshToken);
   }
 
-  @UseGuards(JwtAuthGuardApi)
+  // @UseGuards(JwtAuthGuardApi)
   @Post('forgot-password')
-  async sendMailForResetPassword(@Req() req) {
-    return this.authService.sendMailForResetPassword(req.user.userId);
+  async sendMailForResetPassword(@Body() dto: EmailDto) {
+    return this.authService.sendMailForResetPassword(dto.email);
   }
 
   @Get('reset-password/:token')

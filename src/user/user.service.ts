@@ -6,12 +6,12 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { PrismaService } from 'prisma/prisma.service';
-import { CreateUserInput } from './dto/create-user.input';
 import * as bcrypt from 'bcrypt';
-import { CheckUserInput } from './dto/check-user.input';
-import SetNewPasswordDto from 'src/auth/dto/set-new-password.input';
 import { verify } from 'jsonwebtoken';
+import { PrismaService } from 'prisma/prisma.service';
+import SetNewPasswordDto from 'src/auth/dto/set-new-password.input';
+import { CheckUserInput } from './dto/check-user.input';
+import { CreateUserInput } from './dto/create-user.input';
 
 @Injectable()
 export class UserService {
@@ -27,7 +27,7 @@ export class UserService {
     });
   }
 
-  async findOne(id: number): Promise<User> {
+  async findOne(id: number) {
     return await this.prisma.user.findUnique({
       where: {
         id: id,
@@ -36,9 +36,9 @@ export class UserService {
   }
 
   async findByEmail(email: string): Promise<User> {
-    return await this.prisma.user.findFirst({
+    return await this.prisma.user.findFirstOrThrow({
       where: {
-        email,
+        email: String(email),
       },
     });
   }
@@ -49,6 +49,19 @@ export class UserService {
         username,
       },
     });
+  }
+
+  async getUserById(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: {
+        id: id,
+      },
+    });
+    if (user) return user;
+    throw new HttpException(
+      'User with this id does not exist',
+      HttpStatus.NOT_FOUND,
+    );
   }
 
   async createUser(createUserInput: CreateUserInput) {

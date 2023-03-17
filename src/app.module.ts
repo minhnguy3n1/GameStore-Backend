@@ -7,12 +7,11 @@ import { PrismaService } from './../prisma/prisma.service';
 import { AuthModule } from './auth/auth.module';
 import { CategoryModule } from './category/category.module';
 import { EmailverifyModule } from './emailverify/emailverify.module';
+import { ProductOptionModule } from './product-option/product-option.module';
+import { ProductStatusModule } from './product-status/product-status.module';
 import { ProductModule } from './product/product.module';
 import { PublisherModule } from './publisher/publisher.module';
 import { UserModule } from './user/user.module';
-import { ProductOptionService } from './product-option/product-option.service';
-import { ProductOptionModule } from './product-option/product-option.module';
-import { ProductStatusModule } from './product-status/product-status.module';
 
 @Module({
   imports: [
@@ -20,10 +19,9 @@ import { ProductStatusModule } from './product-status/product-status.module';
     AuthModule,
     ConfigModule.forRoot(),
     MailerModule.forRoot({
-      transport:
-        'smtps://minhnngcd191326@fpt.edu.vn:kbgbahsswqbttznd@smtp.gmail.com',
+      transport: `smtp://${process.env.EMAIL}:${process.env.EMAIL_PASS}@${process.env.EMAIL_DOMAIN}`,
       defaults: {
-        from: '"nest-modules" <minhnngcd1913266@fpt.edu.vn>',
+        from: '"nest-modules" <justen7@ethereal.email>',
       },
       template: {
         dir: __dirname + '/templates/email',
@@ -40,6 +38,6 @@ import { ProductStatusModule } from './product-status/product-status.module';
     ProductOptionModule,
     ProductStatusModule,
   ],
-  providers: [PrismaService, ProductOptionService],
+  providers: [PrismaService],
 })
 export class AppModule {}

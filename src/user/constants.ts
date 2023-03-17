@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 export const CONSTANTS = {
   ROLES: {
     SELLER: 'Seller',

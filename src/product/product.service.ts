@@ -67,6 +67,11 @@ export class ProductService {
             categoryName: true,
           },
         },
+        ProductOption: {
+          include: {
+            productStatus: true,
+          },
+        },
       },
     });
   }

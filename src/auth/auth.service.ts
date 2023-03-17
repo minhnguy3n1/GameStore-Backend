@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-empty-function */
 import { MailerService } from '@nestjs-modules/mailer';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
@@ -15,8 +17,8 @@ export class AuthService {
     private mailerService: MailerService,
   ) {}
 
-  async validateUser(username: string, password: string) {
-    const user = await this.userService.findByUsername(username);
+  async validateUser(email: string, password: string) {
+    const user = await this.userService.findByEmail(email);
 
     if (!user) {
       return null;
@@ -64,18 +66,17 @@ export class AuthService {
   }
 
   async login(
-    username: string,
-    password: string,
+    email: string,
     values: { userAgent: string; ipAddress: string },
   ): Promise<{ accessToken: string; refreshToken: string } | undefined> {
-    const user = await this.userService.findByUsername(username);
+    const user = await this.userService.findByEmail(email);
     return this.newRefreshAndAccessToken(user, values);
   }
 
   private async newRefreshAndAccessToken(
     user: User,
     values: { userAgent: string; ipAddress: string },
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  ): Promise<{ accessToken: string; refreshToken: string; user: User }> {
     const refreshObject = new RefreshToken({
       id:
         this.refreshTokens.length === 0
@@ -87,6 +88,7 @@ export class AuthService {
     });
     this.refreshTokens.push(refreshObject);
 
+    user.password = undefined;
     return {
       refreshToken: refreshObject.sign(),
       accessToken: sign(
@@ -99,6 +101,7 @@ export class AuthService {
           expiresIn: '15m',
         },
       ),
+      user,
     };
   }
 
@@ -114,25 +117,23 @@ export class AuthService {
     );
   }
 
-  async sendMailForResetPassword(userId: number) {
-    const user = await this.userService.findOne(userId);
+  async sendMailForResetPassword(email: string) {
+    const user = await this.userService.findByEmail(email);
     if (!user) {
       throw new BadRequestException();
     }
 
-    const payload = { email: user.email };
-
-    const token = sign(payload, process.env.JWT_RESETPASSWORD_TOKEN_SECRET);
+    const token = sign(email, process.env.JWT_RESETPASSWORD_TOKEN_SECRET);
 
     const url = `${process.env.RESET_PASSWORD_URL}/${token}`;
 
     return this.mailerService
       .sendMail({
-        to: user.email,
+        to: email,
         from: 'minhnngcd191326@fpt.edu.vn',
         subject: 'Reset password for Game Store account',
         text: 'Reset password',
-        html: `<b>Reset password</b></br><p>Hi ${user.lastName}, Your recently requested to reset your password for your GameStore account. Click the button below to reset it..</p></br><a href="${url}">Reset your password</a>`,
+        html: `<b>Reset password</b></br><p>Hi  ${user.lastName}, Your recently requested to reset your password for your GameStore account. Click the button below to reset it..</p></br><a href="${url}">Reset your password</a>`,
       })
       .then(() => {})
       .catch(() => {});
