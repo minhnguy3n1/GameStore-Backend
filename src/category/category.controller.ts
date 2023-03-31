@@ -29,7 +29,7 @@ export class CategoryController {
   @Put(':id')
   updateCategory(
     @Param('id', ParseIntPipe) categoryId: number,
-    dto: UpdateCategoryDto,
+    @Body() dto: UpdateCategoryDto,
   ) {
     return this.categoryService.updateCategory(categoryId, dto);
   }

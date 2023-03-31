@@ -6,15 +6,6 @@ export class CreateProductOptionDto {
   @IsNotEmpty()
   optionName: string;
 
-  @IsNotEmpty()
-  price: number;
-
-  @IsString()
-  description?: string;
-
-  avatar?: string;
-
   productId: number;
 
-  statusId: number;
 }

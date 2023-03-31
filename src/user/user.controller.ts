@@ -1,4 +1,3 @@
-import { EmailDto } from './../auth/dto/check-email.input';
 /* eslint-disable prettier/prettier */
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -14,12 +13,8 @@ export class UserController {
   @Get('users')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles(Role.ADMINISTRATOR)
-  async findAll(@Req() req) {
+  async findAll() {
     return this.userService.findAll();
   }
 
-  @Post()
-  async findByEmail(@Body() dto: EmailDto) {
-    return this.userService.findByEmail(dto.email);
-  }
 }

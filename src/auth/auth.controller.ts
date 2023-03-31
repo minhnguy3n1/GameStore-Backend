@@ -1,4 +1,3 @@
-import { EmailDto } from './dto/check-email.input';
 /* eslint-disable prettier/prettier */
 import {
   Body,
@@ -14,6 +13,7 @@ import {
 import { EmailverifyService } from 'src/emailverify/emailverify.service';
 import { UserService } from 'src/user/user.service';
 import { AuthService } from './auth.service';
+import { EmailDto } from './dto/check-email.input';
 import { CheckUserInput } from './dto/check-user.input';
 import { CreateUserInput } from './dto/create-user.input';
 import { LoginDto } from './dto/login.dto';
@@ -54,11 +54,11 @@ export class AuthController {
   async register(@Body() createUserInput: CreateUserInput) {
     console.log(createUserInput);
     await this.userService.createUser(createUserInput);
-    // await this.emailverifyService.sendEmailVerify(
-    //   createUserInput.email,
-    //   createUserInput.lastName,
-    // );
-    return 'sucessfull!';
+    await this.emailverifyService.sendEmailVerify(
+      createUserInput.email,
+      createUserInput.lastName,
+    );
+    return 'Register successfully!';
   }
 
   @Post('refresh')
@@ -74,7 +74,7 @@ export class AuthController {
   // @UseGuards(JwtAuthGuardApi)
   @Post('forgot-password')
   async sendMailForResetPassword(@Body() dto: EmailDto) {
-    return this.authService.sendMailForResetPassword(dto.email);
+    return this.emailverifyService.sendMailForResetPassword(dto.email);
   }
 
   @Get('reset-password/:token')

@@ -27,6 +27,12 @@ export class ProductController {
     return this.productService.getProductById(productId);
   }
 
+  @Get('search/:name')
+  async getProductByName(@Param('name') name: string) {
+    console.log(name);
+    return await this.productService.getProductByName(name);
+  }
+
   @Post()
   createProduct(@Body() dto: CreateProductDto) {
     return this.productService.createProduct(dto);

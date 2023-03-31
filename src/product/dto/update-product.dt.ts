@@ -6,10 +6,18 @@ export class UpdateProductDto {
   @IsNotEmpty()
   productName: string;
 
-  
   @IsNotEmpty()
   publisherId: number;
-  
+
   @IsNotEmpty()
   categoryId: number;
+
+  description?: string;
+
+  @IsNotEmpty()
+  price: number;
+
+  avatarURL?: string;
+
+  statusId?: number;
 }

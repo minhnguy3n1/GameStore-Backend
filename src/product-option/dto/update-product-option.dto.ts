@@ -6,15 +6,5 @@ export class UpdateProductOptionDto {
   @IsNotEmpty()
   optionName: string;
 
-  @IsNotEmpty()
-  price: number;
-
-  @IsString()
-  description?: string;
-
-  avatar?: string;
-
   productId: number;
-
-  statusId: number;
 }

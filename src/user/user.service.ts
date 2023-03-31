@@ -20,7 +20,6 @@ export class UserService {
   async findAll() {
     return await this.prisma.user.findMany({
       select: {
-        username: true,
         email: true,
         phone: true,
       },
@@ -43,13 +42,6 @@ export class UserService {
     });
   }
 
-  async findByUsername(username: string): Promise<User> {
-    return this.prisma.user.findFirst({
-      where: {
-        username,
-      },
-    });
-  }
 
   async getUserById(id: number) {
     const user = await this.prisma.user.findUnique({
@@ -57,7 +49,7 @@ export class UserService {
         id: id,
       },
     });
-    if (user) return user;
+    if (user) return { user: user };
     throw new HttpException(
       'User with this id does not exist',
       HttpStatus.NOT_FOUND,
@@ -68,7 +60,6 @@ export class UserService {
     const userCheckAvailble = await this.prisma.user.findFirst({
       where: {
         OR: [
-          { username: createUserInput.username },
           { email: createUserInput.email },
           { phone: createUserInput.phone },
         ],
@@ -92,11 +83,6 @@ export class UserService {
 
   async checkCreateUser(createUserInput: CheckUserInput) {
     console.log(createUserInput);
-    const existUsername = await this.prisma.user.findFirst({
-      where: {
-        username: createUserInput.username,
-      },
-    });
 
     const existEmail = await this.prisma.user.findFirst({
       where: {
@@ -109,13 +95,9 @@ export class UserService {
       },
     });
 
-    let resultUsernameCheck = true;
     let resultEmailCheck = true;
     let resultPhoneCheck = true;
 
-    if (existUsername) {
-      resultUsernameCheck = false;
-    }
     if (existEmail) {
       resultEmailCheck = false;
     }
@@ -126,7 +108,6 @@ export class UserService {
     const result = {
       acceptEmailCheck: resultEmailCheck,
       acceptPhoneCheck: resultPhoneCheck,
-      acceptUsernameCheck: resultUsernameCheck,
     };
 
     return result;

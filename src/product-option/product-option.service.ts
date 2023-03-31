@@ -1,28 +1,19 @@
-import { ForbiddenException } from '@nestjs/common';
-import { UpdateProductOptionDto } from './dto/update-product-option.dto';
 /* eslint-disable prettier/prettier */
 
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateProductOptionDto } from './dto/create-product-option.dto';
+import { UpdateProductOptionDto } from './dto/update-product-option.dto';
 
 @Injectable()
 export class ProductOptionService {
   constructor(private prisma: PrismaService) {}
 
   createProductOption(dto: CreateProductOptionDto) {
-    const { optionName, price, description, avatar, statusId, productId } = dto;
+    const { optionName, productId } = dto;
     return this.prisma.productOption.create({
       data: {
         optionName: optionName,
-        price: Number(price),
-        description: description,
-        avatar: avatar,
-        productStatus: {
-          connect: {
-            id: Number(statusId),
-          },
-        },
         product: {
           connect: {
             id: Number(productId),
@@ -40,17 +31,12 @@ export class ProductOptionService {
             productName: true,
           },
         },
-        productStatus: {
-          select: {
-            statusName: true,
-          },
-        },
       },
     });
   }
 
   updateProductOption(productOptionId: number, dto: UpdateProductOptionDto) {
-    const { optionName, price, description, avatar, statusId, productId } = dto;
+    const { optionName, productId } = dto;
 
     const productOption = this.prisma.productOption.findUnique({
       where: {
@@ -67,14 +53,6 @@ export class ProductOptionService {
       },
       data: {
         optionName: optionName,
-        price: Number(price) ,
-        description: description,
-        avatar: avatar,
-        productStatus: {
-          connect: {
-            id: Number(statusId),
-          },
-        },
         product: {
           connect: {
             id: Number(productId),

@@ -1,9 +1,40 @@
 -- CreateTable
+CREATE TABLE "User" (
+    "id" SERIAL NOT NULL,
+    "username" TEXT NOT NULL,
+    "password" TEXT NOT NULL,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "isEmailValidated" BOOLEAN NOT NULL DEFAULT false,
+    "phone" TEXT NOT NULL,
+    "address" TEXT NOT NULL,
+    "dateOfBirth" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "roles" TEXT[] DEFAULT ARRAY['Customer']::TEXT[],
+
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "RefeshToken" (
+    "id" SERIAL NOT NULL,
+    "token" TEXT NOT NULL,
+
+    CONSTRAINT "RefeshToken_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Product" (
     "id" SERIAL NOT NULL,
     "productName" TEXT NOT NULL,
     "publisherId" INTEGER NOT NULL,
     "categoryId" INTEGER NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "avatarURL" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "price" DOUBLE PRECISION NOT NULL,
+    "statusId" INTEGER NOT NULL,
 
     CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
 );
@@ -37,13 +68,27 @@ CREATE TABLE "Code" (
 CREATE TABLE "ProductOption" (
     "id" SERIAL NOT NULL,
     "optionName" TEXT NOT NULL,
-    "Price" DECIMAL(65,30) NOT NULL,
-    "Description" TEXT NOT NULL,
-    "Status" TEXT NOT NULL,
-    "Avatar" TEXT NOT NULL,
+    "productId" INTEGER NOT NULL,
 
     CONSTRAINT "ProductOption_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateTable
+CREATE TABLE "ProductStatus" (
+    "id" SERIAL NOT NULL,
+    "statusName" TEXT NOT NULL,
+
+    CONSTRAINT "ProductStatus_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_phone_key" ON "User"("phone");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Product_productName_key" ON "Product"("productName");
@@ -61,4 +106,10 @@ ALTER TABLE "Product" ADD CONSTRAINT "Product_publisherId_fkey" FOREIGN KEY ("pu
 ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Product" ADD CONSTRAINT "Product_statusId_fkey" FOREIGN KEY ("statusId") REFERENCES "ProductStatus"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Code" ADD CONSTRAINT "Code_productOptionId_fkey" FOREIGN KEY ("productOptionId") REFERENCES "ProductOption"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProductOption" ADD CONSTRAINT "ProductOption_productId_fkey" FOREIGN KEY ("productId") REFERENCES "Product"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

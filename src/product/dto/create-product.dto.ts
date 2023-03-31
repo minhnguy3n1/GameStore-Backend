@@ -11,4 +11,15 @@ export class CreateProductDto {
 
   @IsNotEmpty()
   categoryId: number;
+
+  description?: string;
+
+  @IsNotEmpty()
+  price: number;
+
+  createdAt: Date;
+
+  avatarURL?: string;
+
+  statusId?: number;
 }

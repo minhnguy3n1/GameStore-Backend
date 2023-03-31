@@ -3,6 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 datasource db {
@@ -12,7 +13,6 @@ datasource db {
 
 model User {
   id               Int      @id @default(autoincrement())
-  username         String   @unique
   password         String
   firstName        String
   lastName         String
@@ -24,6 +24,7 @@ model User {
   createdAt        DateTime @default(now())
 
   roles String[] @default(["Customer"])
+  
 }
 
 model RefeshToken {
@@ -41,6 +42,13 @@ model Product {
   categoryId    Int
   category      Category?       @relation(fields: [categoryId], references: [id])
   ProductOption ProductOption[]
+  createdAt     DateTime        @default(now())
+  avatarURL     String
+  description   String
+  price         Float
+  statusId      Int
+  productStatus ProductStatus   @relation(fields: [statusId], references: [id])
+  @@index([productName])
 }
 
 model Publisher {
@@ -63,21 +71,16 @@ model Code {
 }
 
 model ProductOption {
-  id               Int           @id @default(autoincrement())
-  optionName       String
-  price            Float
-  description      String
-  
-  avatar           String
-  productId        Int
-  product          Product       @relation(fields: [productId], references: [id])
-  statusId         Int
-  productStatus ProductStatus @relation(fields: [statusId], references: [id])
-  Code             Code[]
+  id         Int     @id @default(autoincrement())
+  optionName String
+  productId  Int
+  product    Product @relation(fields: [productId], references: [id])
+
+  Code Code[]
 }
 
 model ProductStatus {
-  id         Int    @id @default(autoincrement())
+  id         Int       @id @default(autoincrement())
   statusName String
-  productOption ProductOption[]
+  product    Product[]
 }

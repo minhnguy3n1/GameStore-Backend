@@ -24,7 +24,7 @@ import { UserModule } from './user/user.module';
         from: '"nest-modules" <justen7@ethereal.email>',
       },
       template: {
-        dir: __dirname + '/templates/email',
+        dir: process.cwd() + '/src/templates/email/',
         adapter: new HandlebarsAdapter(),
         options: {
           strict: true,

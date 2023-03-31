@@ -1,7 +1,7 @@
+/* eslint-disable prettier/prettier */
 import { IsEmail } from 'class-validator';
 
 export class CreateUserInput {
-  username: string;
 
   password: string;
 
@@ -18,5 +18,5 @@ export class CreateUserInput {
 
   dateOfBirth?: Date;
 
-  cretedAt?: Date;
+  createdAt?: Date;
 }

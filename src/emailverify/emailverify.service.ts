@@ -59,4 +59,30 @@ export class EmailverifyService {
       throw new BadRequestException('Bad confirmation token');
     }
   }
+
+  async sendMailForResetPassword(email: string) {
+    const user = await this.userService.findByEmail(email);
+    if (!user) {
+      throw new BadRequestException();
+    }
+
+    const token = sign(email, process.env.JWT_RESETPASSWORD_TOKEN_SECRET);
+
+    const url = `${process.env.RESET_PASSWORD_URL}/${token}`;
+
+    return this.mailerService
+      .sendMail({
+        to: email,
+        from: 'minhnngcd191326@fpt.edu.vn',
+        subject: 'Reset password for Game Store account',
+        text: 'Reset password',
+        template: './welcome.hbs',
+        context: {
+          name: user.lastName,
+          url: url,
+        },
+      })
+      .then(() => {})
+      .catch(() => {});
+  }
 }
