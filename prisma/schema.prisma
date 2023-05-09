@@ -2,7 +2,7 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
@@ -24,7 +24,6 @@ model User {
   createdAt        DateTime @default(now())
 
   roles String[] @default(["Customer"])
-  
 }
 
 model RefeshToken {
@@ -43,11 +42,13 @@ model Product {
   category      Category?       @relation(fields: [categoryId], references: [id])
   ProductOption ProductOption[]
   createdAt     DateTime        @default(now())
-  avatarURL     String
+  image     String
   description   String
   price         Float
-  statusId      Int
-  productStatus ProductStatus   @relation(fields: [statusId], references: [id])
+  available     Int   
+  stockId      Int
+  stockStatus StockStatus   @relation(fields: [stockId], references: [id])
+
   @@index([productName])
 }
 
@@ -73,14 +74,16 @@ model Code {
 model ProductOption {
   id         Int     @id @default(autoincrement())
   optionName String
-  productId  Int
+  productId  Int 
   product    Product @relation(fields: [productId], references: [id])
 
   Code Code[]
 }
 
-model ProductStatus {
+model StockStatus {
   id         Int       @id @default(autoincrement())
   statusName String
   product    Product[]
 }
+
+

@@ -17,9 +17,11 @@ export class CreateProductDto {
   @IsNotEmpty()
   price: number;
 
+  available?: number;
+
   createdAt: Date;
 
-  avatarURL?: string;
+  image?: string;
 
   statusId?: number;
 }

@@ -1,5 +1,5 @@
 /* eslint-disable prettier/prettier */
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsString } from 'class-validator';
 
 export class UpdateProductDto {
   @IsString()
@@ -16,8 +16,9 @@ export class UpdateProductDto {
 
   @IsNotEmpty()
   price: number;
+  available: number;
 
-  avatarURL?: string;
+  image?: string;
 
   statusId?: number;
 }

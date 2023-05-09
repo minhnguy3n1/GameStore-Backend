@@ -3,7 +3,6 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { NotFoundException } from '@nestjs/common/exceptions';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
-import { SearchProductDto } from './dto/search-product.dto';
 import { UpdateProductDto } from './dto/update-product.dt';
 
 @Injectable()
@@ -15,11 +14,12 @@ export class ProductService {
       productName,
       publisherId,
       categoryId,
-      avatarURL,
+      image,
       createdAt,
       price,
       description,
       statusId,
+      available,
     } = dto;
     return this.prisma.product.create({
       data: {
@@ -34,20 +34,21 @@ export class ProductService {
             id: Number(categoryId),
           },
         },
-        productStatus: {
+        stockStatus: {
           connect: {
             id: Number(statusId),
           },
         },
+        available: Number(available),
         price: Number(price),
         description: description,
-        avatarURL: avatarURL,
+        image: image,
         createdAt: createdAt,
       },
     });
   }
   getAllProducts() {
-    return this.prisma.product.findMany({
+    const products = this.prisma.product.findMany({
       include: {
         publisher: {
           select: {
@@ -59,13 +60,14 @@ export class ProductService {
             categoryName: true,
           },
         },
-        productStatus: {
+        stockStatus: {
           select: {
             statusName: true,
           },
         },
       },
     });
+    return products;
   }
 
   async getProductById(productId: number) {
@@ -93,7 +95,7 @@ export class ProductService {
             categoryName: true,
           },
         },
-        productStatus: {
+        stockStatus: {
           select: {
             statusName: true,
           },
@@ -120,48 +122,36 @@ export class ProductService {
     if (!product) {
       throw new NotFoundException('Product Not Found');
     }
-    const result = JSON.stringify(
-      await this.prisma.product.findMany({
-        where: {
-          productName: {
-            search: String(dto)
-              .trim()
-              .replace(tsquerySpecialChars, ' ')
-              .split(/\s+/)
-              .join(' & '),
+
+    return await this.prisma.product.findFirst({
+      where: {
+        productName: {
+          search: String(dto)
+            .trim()
+            .replace(tsquerySpecialChars, ' ')
+            .split(/\s+/)
+            .join(' & '),
+        },
+      },
+      include: {
+        publisher: {
+          select: {
+            publisherName: true,
           },
         },
-        include: {
-          publisher: {
-            select: {
-              publisherName: true,
-            },
+        category: {
+          select: {
+            categoryName: true,
           },
-          category: {
-            select: {
-              categoryName: true,
-            },
-          },
-          productStatus: {
-            select: {
-              statusName: true,
-            },
-          },
-          ProductOption: {},
         },
-      }),
-    );
-
-    return result;
-  }
-
-  preprocessSearchTerms(searchTerm: string) {
-    const tsquerySpecialChars = /[()|&:*!]/g;
-    return searchTerm
-      .trim()
-      .replace(tsquerySpecialChars, ' ')
-      .split(/\s+/)
-      .join(' & ');
+        stockStatus: {
+          select: {
+            statusName: true,
+          },
+        },
+        ProductOption: {},
+      },
+    });
   }
 
   async updateProduct(productId: number, dto: UpdateProductDto) {
@@ -172,7 +162,8 @@ export class ProductService {
       statusId,
       price,
       description,
-      avatarURL,
+      image,
+      available,
     } = dto;
     //Get Product by Id
     const product = await this.prisma.product.findUnique({
@@ -202,28 +193,19 @@ export class ProductService {
           },
         },
 
-        productStatus: {
+        stockStatus: {
           connect: {
             id: Number(statusId),
           },
         },
+        available: Number(available),
         price: Number(price),
         description: description,
-        avatarURL: avatarURL,
+        image: image,
       },
     });
   }
 
-  async search(query: string) {
-    const q = await this.prisma
-      .$queryRaw`CREATE INDEX fulltext_idx ON Product USING gin(to_tsvector('english', productName))`;
-
-    const results = await this.prisma.$queryRaw`SELECT "public"."Product".*
-      FROM  "public"."Product"
-      WHERE to_tsvector('english', "Product"."productName") @@ plainto_tsquery('english', ${query})
-    `;
-    return results;
-  }
 
   async deleteProduct(productId: number) {
     //Get Product by Id

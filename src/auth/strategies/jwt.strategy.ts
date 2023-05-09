@@ -1,12 +1,13 @@
-/* eslint-disable @typescript-eslint/ban-types */
 /* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/ban-types */
+
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { UserService } from './../../user/user.service';
 
-type JwtPayload = {
-  userId: number;
-}
+// type JwtPayload = {
+//   userId: number;
+// }
 
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private userService: UserService) {
@@ -17,7 +18,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: JwtPayload, done: Function) {
+  async validate(payload: any, done: Function) {
     return done(null, payload);
   }
 }

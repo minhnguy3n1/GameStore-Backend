@@ -29,7 +29,6 @@ export class ProductController {
 
   @Get('search/:name')
   async getProductByName(@Param('name') name: string) {
-    console.log(name);
     return await this.productService.getProductByName(name);
   }
 

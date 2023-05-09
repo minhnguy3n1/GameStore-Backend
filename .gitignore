@@ -42,4 +42,6 @@ lerna-debug.log*
 
 #Folder
 prisma/schema.prisma
-docker-compose.yml*
+
+#File
+docker-compose.yml

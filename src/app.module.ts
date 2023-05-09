@@ -8,10 +8,11 @@ import { AuthModule } from './auth/auth.module';
 import { CategoryModule } from './category/category.module';
 import { EmailverifyModule } from './emailverify/emailverify.module';
 import { ProductOptionModule } from './product-option/product-option.module';
-import { ProductStatusModule } from './product-status/product-status.module';
+import { StockStatusModule } from './stock-status/stock-status.module';
 import { ProductModule } from './product/product.module';
 import { PublisherModule } from './publisher/publisher.module';
 import { UserModule } from './user/user.module';
+import { StripeService } from './stripe/stripe.service';
 
 @Module({
   imports: [
@@ -36,8 +37,8 @@ import { UserModule } from './user/user.module';
     CategoryModule,
     PublisherModule,
     ProductOptionModule,
-    ProductStatusModule,
+    StockStatusModule,
   ],
-  providers: [PrismaService],
+  providers: [PrismaService, StripeService],
 })
 export class AppModule {}
