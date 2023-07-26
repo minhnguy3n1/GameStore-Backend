@@ -1,8 +1,8 @@
 /* eslint-disable prettier/prettier */
 export default class SetNewPasswordDto {
-  password: string;
+  newPassword: string;
 
-  passwordConfirm: string;
+  confirmNewPassword: string;
 
   token: string;
 }

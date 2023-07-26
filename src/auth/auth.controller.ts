@@ -5,12 +5,12 @@ import {
   Delete,
   Get,
   Ip,
-  Param,
   Post,
   Req,
   UseGuards,
 } from '@nestjs/common';
 import { EmailverifyService } from 'src/emailverify/emailverify.service';
+import { StripeService } from 'src/stripe/stripe.service';
 import { UserService } from 'src/user/user.service';
 import { AuthService } from './auth.service';
 import { EmailDto } from './dto/check-email.input';
@@ -28,6 +28,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private userService: UserService,
     private emailverifyService: EmailverifyService,
+    private stripeService: StripeService,
   ) {}
 
   @UseGuards(LocalAuthGuard)
@@ -52,8 +53,14 @@ export class AuthController {
 
   @Post('register')
   async register(@Body() createUserInput: CreateUserInput) {
-    console.log(createUserInput);
-    await this.userService.createUser(createUserInput);
+    const stripeCustomer = await this.stripeService.createCustomer(
+      createUserInput.lastName,
+      createUserInput.email,
+    );
+    await this.userService.createUser({
+      ...createUserInput,
+      stripeCustomerId: stripeCustomer.id,
+    });
     await this.emailverifyService.sendEmailVerify(
       createUserInput.email,
       createUserInput.lastName,
@@ -74,15 +81,16 @@ export class AuthController {
   // @UseGuards(JwtAuthGuardApi)
   @Post('forgot-password')
   async sendMailForResetPassword(@Body() dto: EmailDto) {
-    return this.emailverifyService.sendMailForResetPassword(dto.email);
+    return await this.emailverifyService.sendMailForResetPassword(dto.email);
   }
 
-  @Get('reset-password/:token')
-  resetPassWordResendToken(@Param('token') token) {
-    return { resetPassWordToken: token };
+  @UseGuards(JwtAuthGuardApi)
+  @Post('change-password')
+  resetPassWordResendToken(@Req() request, @Body() password) {
+    return this.userService.changePassword(password, request.user.userId);
   }
 
-  @Post('set-newpassword')
+  @Post('reset-password')
   async setNewPassword(@Body() setNewPasswordDto: SetNewPasswordDto) {
     return await this.userService.setNewPassword(setNewPasswordDto);
   }

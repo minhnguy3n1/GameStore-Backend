@@ -12,6 +12,8 @@ import { PrismaService } from 'prisma/prisma.service';
 import SetNewPasswordDto from 'src/auth/dto/set-new-password.input';
 import { CheckUserInput } from './dto/check-user.input';
 import { CreateUserInput } from './dto/create-user.input';
+import changePasswordDto from 'src/auth/dto/change-password.dto';
+
 
 @Injectable()
 export class UserService {
@@ -20,43 +22,43 @@ export class UserService {
   async findAll() {
     return await this.prisma.user.findMany({
       select: {
+        id: true,
+        firstName: true,
+        lastName: true,
         email: true,
-        phone: true,
-      },
-    });
-  }
-
-  async findOne(id: number) {
-    return await this.prisma.user.findUnique({
-      where: {
-        id: id,
+        roles: true,
+        isEmailValidated: true,
       },
     });
   }
 
   async findByEmail(email: string): Promise<User> {
-    return await this.prisma.user.findFirstOrThrow({
+    const user = await this.prisma.user.findFirstOrThrow({
       where: {
         email: String(email),
       },
     });
+    return user;
   }
 
-
-  async getUserById(id: number) {
+  async getUserById(id: number): Promise<User> {
     const user = await this.prisma.user.findUnique({
       where: {
         id: id,
       },
     });
-    if (user) return { user: user };
+
+    if (user) {
+      user.password = undefined;
+      return user;
+    }
     throw new HttpException(
       'User with this id does not exist',
       HttpStatus.NOT_FOUND,
     );
   }
 
-  async createUser(createUserInput: CreateUserInput) {
+  async createUser(createUserInput) {
     const userCheckAvailble = await this.prisma.user.findFirst({
       where: {
         OR: [
@@ -72,7 +74,10 @@ export class UserService {
     try {
       const password = await bcrypt.hash(createUserInput.password, 10);
       return this.prisma.user.create({
-        data: { ...createUserInput, password: password },
+        data: {
+          ...createUserInput,
+          password: password,
+        },
       });
     } catch {
       (e) => {
@@ -125,7 +130,9 @@ export class UserService {
   }
 
   async setNewPassword(setNewPasswordDto: SetNewPasswordDto) {
-    if (setNewPasswordDto.password !== setNewPasswordDto.passwordConfirm) {
+    if (
+      setNewPasswordDto.newPassword !== setNewPasswordDto.confirmNewPassword
+    ) {
       throw new BadRequestException('Password confirm not match');
     }
 
@@ -138,11 +145,43 @@ export class UserService {
       throw new BadRequestException('Invalid Token');
     }
 
-    const newPassword = await bcrypt.hash(setNewPasswordDto.password, 10);
+    const newPassword = await bcrypt.hash(setNewPasswordDto.newPassword, 10);
 
     return this.prisma.user.update({
       where: {
         email: payload.email,
+      },
+      data: {
+        password: newPassword,
+      },
+    });
+  }
+
+  async changePassword(changePasswordDto: changePasswordDto, userId: number) {
+    const password = await this.prisma.user.findUnique({
+      where: {
+        id: userId
+      },
+      select: {
+        password: true,
+      }
+    })
+    const passwordHashed = await bcrypt.hash(changePasswordDto.oldPassword, 10);
+    if (password !== passwordHashed) {
+      throw new BadRequestException('Old Password not correct!');
+    }
+
+    if (
+      changePasswordDto.newPassword !== changePasswordDto.confirmNewPassword
+    ) {
+      throw new BadRequestException('Password confirm not match');
+    }
+
+    const newPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+
+    return this.prisma.user.update({
+      where: {
+        id: userId,
       },
       data: {
         password: newPassword,

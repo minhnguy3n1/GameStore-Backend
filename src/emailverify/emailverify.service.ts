@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 import { MailerService } from '@nestjs-modules/mailer';
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { sign, verify } from 'jsonwebtoken';
 import { UserService } from 'src/user/user.service';
 
@@ -10,30 +11,32 @@ export class EmailverifyService {
   constructor(
     private mailerService: MailerService,
     private userService: UserService,
+    private configService: ConfigService,
   ) {}
   async sendEmailVerify(email: string, lastName: string) {
-    const payload = { email };
+    const token = sign(email, process.env.JWT_VERIFICATION_TOKEN_SECRET);
+    console.log(email);
 
-    const token = await sign(
-      payload,
-      process.env.JWT_VERIFICATION_TOKEN_SECRET,
-      {
-        expiresIn: '600s',
-      },
-    );
+    const url = `${process.env.EMAIL_CONFIRMATION_URL}?token=${token}`;
 
-    const url = `${process.env.EMAIL_CONFIRMATION_URL}/${token}`;
+    console.log(email);
 
     return this.mailerService
       .sendMail({
         to: email,
         from: 'minhnngcd191326@fpt.edu.vn',
-        subject: 'Welcome to Game Store',
-        text: 'Welcome',
-        html: `<b>Welcome to Game Store</b></br><p>Hi ${lastName}, Let's confirm your email address.</p></br><a href="${url}">Confirm Email Address</a>`,
+        subject: 'Verify your account',
+        text: 'Verify your account',
+        template: './welcome.hbs',
+        context: {
+          name: lastName,
+          url: url,
+        },
       })
       .then(() => {})
-      .catch(() => {});
+      .catch((error) => {
+        console.log(error);
+      });
   }
 
   async confirmVerify(email: string) {
@@ -76,7 +79,7 @@ export class EmailverifyService {
         from: 'minhnngcd191326@fpt.edu.vn',
         subject: 'Reset password for Game Store account',
         text: 'Reset password',
-        template: './welcome.hbs',
+        template: './reset-password.hbs',
         context: {
           name: user.lastName,
           url: url,

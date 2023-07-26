@@ -22,13 +22,9 @@ model User {
   address          String
   dateOfBirth      DateTime @default(now())
   createdAt        DateTime @default(now())
+  stripeCustomerId String?
 
   roles String[] @default(["Customer"])
-}
-
-model RefeshToken {
-  id    Int    @id @default(autoincrement())
-  token String
 }
 
 model Product {
@@ -42,12 +38,12 @@ model Product {
   category      Category?       @relation(fields: [categoryId], references: [id])
   ProductOption ProductOption[]
   createdAt     DateTime        @default(now())
-  image     String
+  image         String
   description   String
   price         Float
-  available     Int   
-  stockId      Int
-  stockStatus StockStatus   @relation(fields: [stockId], references: [id])
+  available     Int
+  stockId       Int
+  stockStatus   StockStatus     @relation(fields: [stockId], references: [id])
 
   @@index([productName])
 }
@@ -66,7 +62,7 @@ model Category {
 
 model Code {
   id              Int           @id @default(autoincrement())
-  code            String
+  code            String[]
   productOptionId Int
   productOption   ProductOption @relation(fields: [productOptionId], references: [id])
 }
@@ -74,7 +70,7 @@ model Code {
 model ProductOption {
   id         Int     @id @default(autoincrement())
   optionName String
-  productId  Int 
+  productId  Int
   product    Product @relation(fields: [productId], references: [id])
 
   Code Code[]
@@ -85,5 +81,4 @@ model StockStatus {
   statusName String
   product    Product[]
 }
-
 

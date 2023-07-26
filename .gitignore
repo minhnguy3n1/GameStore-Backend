@@ -45,3 +45,5 @@ prisma/schema.prisma
 
 #File
 docker-compose.yml
+.env
+api.md

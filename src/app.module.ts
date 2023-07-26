@@ -8,17 +8,20 @@ import { AuthModule } from './auth/auth.module';
 import { CategoryModule } from './category/category.module';
 import { EmailverifyModule } from './emailverify/emailverify.module';
 import { ProductOptionModule } from './product-option/product-option.module';
-import { StockStatusModule } from './stock-status/stock-status.module';
 import { ProductModule } from './product/product.module';
 import { PublisherModule } from './publisher/publisher.module';
-import { UserModule } from './user/user.module';
+import { StockStatusModule } from './stock-status/stock-status.module';
+import { StripeModule } from './stripe/stripe.module';
 import { StripeService } from './stripe/stripe.service';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
     UserModule,
     AuthModule,
-    ConfigModule.forRoot(),
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     MailerModule.forRoot({
       transport: `smtp://${process.env.EMAIL}:${process.env.EMAIL_PASS}@${process.env.EMAIL_DOMAIN}`,
       defaults: {
@@ -38,6 +41,7 @@ import { StripeService } from './stripe/stripe.service';
     PublisherModule,
     ProductOptionModule,
     StockStatusModule,
+    StripeModule,
   ],
   providers: [PrismaService, StripeService],
 })

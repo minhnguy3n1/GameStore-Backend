@@ -1,7 +1,6 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable @typescript-eslint/no-empty-function */
-import { MailerService } from '@nestjs-modules/mailer';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { sign, verify } from 'jsonwebtoken';
@@ -12,10 +11,7 @@ import RefreshToken from './entities/refresh-token.entity';
 export class AuthService {
   private refreshTokens: RefreshToken[] = [];
 
-  constructor(
-    private readonly userService: UserService,
-    private mailerService: MailerService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   async validateUser(email: string, password: string) {
     const user = await this.userService.findByEmail(email);
@@ -30,13 +26,13 @@ export class AuthService {
     return user;
   }
 
-  async refresh(refreshStr: string): Promise<string | undefined> {
+  async refresh(refreshStr: string) {
     const refreshToken = await this.retrieveRefreshToken(refreshStr);
     if (!refreshToken) {
       return undefined;
     }
 
-    const user = await this.userService.findOne(refreshToken.userId);
+    const user = await this.userService.getUserById(refreshToken.userId);
     if (!user) {
       return undefined;
     }
@@ -46,7 +42,11 @@ export class AuthService {
       roles: refreshToken.roles,
     };
 
-    return sign(accessToken, process.env.ACCESS_SECRET, { expiresIn: '1h' });
+    return {
+      accessToken: sign(accessToken, process.env.ACCESS_SECRET, {
+        expiresIn: '5m',
+      }),
+    };
   }
 
   private retrieveRefreshToken(
@@ -68,7 +68,9 @@ export class AuthService {
   async login(
     email: string,
     values: { userAgent: string; ipAddress: string },
-  ): Promise<{ accessToken: string; refreshToken: string } | undefined> {
+  ): Promise<
+    { accessToken: string; refreshToken: string; user: object } | undefined
+  > {
     const user = await this.userService.findByEmail(email);
     return this.newRefreshAndAccessToken(user, values);
   }
@@ -87,8 +89,8 @@ export class AuthService {
       roles: user.roles,
     });
     this.refreshTokens.push(refreshObject);
-
     user.password = undefined;
+
     return {
       refreshToken: refreshObject.sign(),
       accessToken: sign(
@@ -116,6 +118,4 @@ export class AuthService {
       (refreshToken) => refreshToken.id !== refreshToken.id,
     );
   }
-
-  
 }

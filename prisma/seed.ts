@@ -6,6 +6,11 @@ const prisma = new PrismaClient({
 });
 async function main() {
   await prisma.user.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.publisher.deleteMany();
+  await prisma.productOption.deleteMany();
+  await prisma.stockStatus.deleteMany();
 }
 main()
   .catch((e) => {
