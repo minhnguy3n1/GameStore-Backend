@@ -21,6 +21,7 @@ import RefreshTokenDto from './dto/refresh-token.dto';
 import SetNewPasswordDto from './dto/set-new-password.input';
 import { JwtAuthGuardApi } from './guards/jwt-auth.guard';
 import { LocalAuthGuard } from './guards/local-auth.guard';
+import changePasswordDto from './dto/change-password.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -40,7 +41,7 @@ export class AuthController {
     });
   }
 
-  @Post('checkregister')
+  @Post('check-register')
   async checkInputRegister(@Body() checkUserInput: CheckUserInput) {
     return this.userService.checkCreateUser(checkUserInput);
   }
@@ -73,10 +74,6 @@ export class AuthController {
     return this.authService.refresh(body.refreshToken);
   }
 
-  @Delete('logout')
-  async logout(@Body() body: RefreshTokenDto) {
-    return this.authService.logout(body.refreshToken);
-  }
 
   // @UseGuards(JwtAuthGuardApi)
   @Post('forgot-password')
@@ -86,7 +83,7 @@ export class AuthController {
 
   @UseGuards(JwtAuthGuardApi)
   @Post('change-password')
-  resetPassWordResendToken(@Req() request, @Body() password) {
+  resetPassWordResendToken(@Req() request, @Body() password: changePasswordDto) {
     return this.userService.changePassword(password, request.user.userId);
   }
 

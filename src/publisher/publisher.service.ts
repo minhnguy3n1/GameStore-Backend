@@ -8,11 +8,16 @@ import { PrismaService } from './../../prisma/prisma.service';
 export class PublisherService {
   constructor(private prisma: PrismaService) {}
 
-  createPublisher(createCategoryDto: CreatePublisherDto) {
+  createPublisher(createPublisherDto: CreatePublisherDto) {
     return this.prisma.publisher.create({
       data: {
-        ...createCategoryDto,
+        ...createPublisherDto,
       },
+    });
+  }
+  createManyPublishers(createPublisherDto) {
+    return this.prisma.publisher.createMany({
+      data: createPublisherDto,
     });
   }
 

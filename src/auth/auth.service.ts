@@ -100,22 +100,11 @@ export class AuthService {
         },
         process.env.ACCESS_SECRET,
         {
-          expiresIn: '15m',
+          expiresIn: '5m',
         },
       ),
       user,
     };
   }
 
-  async logout(refreshStr): Promise<void> {
-    const refreshToken = await this.retrieveRefreshToken(refreshStr);
-
-    if (!refreshToken) {
-      return;
-    }
-    // delete refreshtoken from db
-    this.refreshTokens = this.refreshTokens.filter(
-      (refreshToken) => refreshToken.id !== refreshToken.id,
-    );
-  }
 }

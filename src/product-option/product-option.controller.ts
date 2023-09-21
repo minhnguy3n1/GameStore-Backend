@@ -19,6 +19,13 @@ export class ProductOptionController {
     return this.productOptionService.createProductOption(dto);
   }
 
+  @Post("add-many")
+  createManyProductOptions(@Body() createProductOPtions) {
+    return this.productOptionService.createManyProductOptions(
+      createProductOPtions,
+    );
+  }
+
   @Put(':id')
   updateProductOption(
     @Param('id', ParseIntPipe) productOptionId,
@@ -29,6 +36,6 @@ export class ProductOptionController {
 
   @Delete(':id')
   deleteProductOption(@Param('id', ParseIntPipe) productOptionId) {
-      return this.productOptionService.deleteProductOption(productOptionId)
+    return this.productOptionService.deleteProductOption(productOptionId);
   }
 }

@@ -59,7 +59,7 @@ export class UserService {
   }
 
   async createUser(createUserInput) {
-    const userCheckAvailble = await this.prisma.user.findFirst({
+    const userCheckAvailable = await this.prisma.user.findFirst({
       where: {
         OR: [
           { email: createUserInput.email },
@@ -68,7 +68,7 @@ export class UserService {
       },
     });
 
-    if (userCheckAvailble) {
+    if (userCheckAvailable) {
       throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
     }
     try {
@@ -158,7 +158,7 @@ export class UserService {
   }
 
   async changePassword(changePasswordDto: changePasswordDto, userId: number) {
-    const password = await this.prisma.user.findUnique({
+    const response = await this.prisma.user.findUnique({
       where: {
         id: userId
       },
@@ -166,8 +166,8 @@ export class UserService {
         password: true,
       }
     })
-    const passwordHashed = await bcrypt.hash(changePasswordDto.oldPassword, 10);
-    if (password !== passwordHashed) {
+
+    if (!bcrypt.compareSync(changePasswordDto.oldPassword, response.password)) {
       throw new BadRequestException('Old Password not correct!');
     }
 

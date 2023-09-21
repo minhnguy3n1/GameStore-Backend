@@ -23,6 +23,12 @@ export class ProductOptionService {
     });
   }
 
+  createManyProductOptions(data) {
+    return this.prisma.productOption.createMany({
+      data: data,
+    })
+  }
+
   getAllProductOption() {
     return this.prisma.productOption.findMany({
       include: {

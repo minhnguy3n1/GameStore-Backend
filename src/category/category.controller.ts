@@ -26,6 +26,12 @@ export class CategoryController {
   createCategory(@Body() dto: CreateCategoryDto) {
     return this.categoryService.createCategory(dto);
   }
+
+  @Post("add-many")
+  createManyCategories(@Body() categories) {
+    return this.categoryService.createManyCategories(categories);
+  }
+
   @Put(':id')
   updateCategory(
     @Param('id', ParseIntPipe) categoryId: number,

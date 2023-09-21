@@ -26,6 +26,12 @@ export class PublisherController {
   createPublisher(@Body() createPublisher: CreatePublisherDto) {
     return this.publisherService.createPublisher(createPublisher);
   }
+
+  @Post("add-many")
+  createManyPublishers(@Body() createPublishers) {
+    return this.publisherService.createManyPublishers(createPublishers);
+  }
+
   @Put(':id')
   updatePublisher(
     @Param('id', ParseIntPipe) publisherId: number,

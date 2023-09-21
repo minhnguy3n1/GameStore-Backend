@@ -35,12 +35,12 @@ export class StripeService {
 
   public async charge(
     amount: number,
+    stripeCustomerId: string,
     paymentMethodId: string,
-    customerId: string,
   ) {
     return this.stripe.paymentIntents.create({
       amount: amount * 100,
-      customer: customerId,
+      customer: stripeCustomerId,
       payment_method: paymentMethodId,
       currency: this.configService.get('STRIPE_CURRENCY'),
       off_session: true,
@@ -48,9 +48,12 @@ export class StripeService {
     });
   }
 
-  public async attachCreditCard(paymentMethodId: string, customerId: string) {
+  public async attachCreditCard(
+    stripeCustomerId: string,
+    paymentMethodId: string,
+  ) {
     return this.stripe.setupIntents.create({
-      customer: customerId,
+      customer: stripeCustomerId,
       payment_method: paymentMethodId,
     });
   }
