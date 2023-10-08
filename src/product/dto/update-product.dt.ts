@@ -7,7 +7,7 @@ export class UpdateProductDto {
   productName: string;
 
   @IsNotEmpty()
-  publisherId: number;
+  platformId: number;
 
   @IsNotEmpty()
   categoryId: number;

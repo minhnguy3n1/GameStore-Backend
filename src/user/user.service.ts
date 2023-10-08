@@ -63,7 +63,6 @@ export class UserService {
       where: {
         OR: [
           { email: createUserInput.email },
-          { phone: createUserInput.phone },
         ],
       },
     });
@@ -86,37 +85,37 @@ export class UserService {
     }
   }
 
-  async checkCreateUser(createUserInput: CheckUserInput) {
-    console.log(createUserInput);
+  // async checkCreateUser(createUserInput: CheckUserInput) {
+  //   console.log(createUserInput);
 
-    const existEmail = await this.prisma.user.findFirst({
-      where: {
-        email: createUserInput.email,
-      },
-    });
-    const existPhone = await this.prisma.user.findFirst({
-      where: {
-        phone: createUserInput.phone,
-      },
-    });
+  //   const existEmail = await this.prisma.user.findFirst({
+  //     where: {
+  //       email: createUserInput.email,
+  //     },
+  //   });
+  //   const existPhone = await this.prisma.user.findFirst({
+  //     where: {
+  //       phone: createUserInput.phone,
+  //     },
+  //   });
 
-    let resultEmailCheck = true;
-    let resultPhoneCheck = true;
+  //   let resultEmailCheck = true;
+  //   let resultPhoneCheck = true;
 
-    if (existEmail) {
-      resultEmailCheck = false;
-    }
-    if (existPhone) {
-      resultPhoneCheck = false;
-    }
+  //   if (existEmail) {
+  //     resultEmailCheck = false;
+  //   }
+  //   if (existPhone) {
+  //     resultPhoneCheck = false;
+  //   }
 
-    const result = {
-      acceptEmailCheck: resultEmailCheck,
-      acceptPhoneCheck: resultPhoneCheck,
-    };
+  //   const result = {
+  //     acceptEmailCheck: resultEmailCheck,
+  //     acceptPhoneCheck: resultPhoneCheck,
+  //   };
 
-    return result;
-  }
+  //   return result;
+  // }
 
   async markEmailAsConfirmed(email: string) {
     return this.prisma.user.update({

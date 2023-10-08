@@ -1,8 +1,8 @@
 /* eslint-disable prettier/prettier */
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class UpdatePublisherDto {
+export class UpdatePlatformDto {
   @IsNotEmpty()
   @IsString()
-  publisherName: string;
+  platformName: string;
 }

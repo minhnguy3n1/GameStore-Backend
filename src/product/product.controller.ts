@@ -8,18 +8,24 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
-import { CreateProductDto } from './dto/create-product.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FileService } from 'src/file/file.service';
 import { UpdateProductDto } from './dto/update-product.dt';
 import { ProductService } from './product.service';
 
 @Controller('product')
 export class ProductController {
-  constructor(private productService: ProductService) {}
+  constructor(
+    private productService: ProductService,
+    private fileService: FileService,
+  ) {}
 
   @Get()
-  getAllProducts() {
-    return this.productService.getAllProducts();
+  async getAllProducts() {
+    return await this.productService.getAllProducts();
   }
 
   @Get(':id')
@@ -33,8 +39,10 @@ export class ProductController {
   }
 
   @Post()
-  createProduct(@Body() dto: CreateProductDto) {
-    return this.productService.createProduct(dto);
+  @UseInterceptors(FileInterceptor('image'))
+  async createProduct(@UploadedFile() image: Express.Multer.File, @Body() product) {
+    const imageURL = await this.fileService.uploadPublicFile(image);
+    return this.productService.createProduct(JSON.parse(product.data), imageURL);
   }
 
   @Put(':id')

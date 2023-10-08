@@ -3,6 +3,9 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
+import { initializeFirebaseApp } from './config/firebase.config';
+
+initializeFirebaseApp()
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {

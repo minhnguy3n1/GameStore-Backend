@@ -38,7 +38,7 @@ export class StripeService {
     stripeCustomerId: string,
     paymentMethodId: string,
   ) {
-    return this.stripe.paymentIntents.create({
+    return await this.stripe.paymentIntents.create({
       amount: amount * 100,
       customer: stripeCustomerId,
       payment_method: paymentMethodId,
@@ -52,7 +52,7 @@ export class StripeService {
     stripeCustomerId: string,
     paymentMethodId: string,
   ) {
-    return this.stripe.setupIntents.create({
+    return await this.stripe.setupIntents.create({
       customer: stripeCustomerId,
       payment_method: paymentMethodId,
     });

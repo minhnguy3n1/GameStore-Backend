@@ -15,12 +15,6 @@ export class CreateUserInput {
   @IsEmail()
   email: string;
 
-  @IsNotEmpty()
-  phone: string;
-
-  @IsNotEmpty()
-  address: string;
-
   dateOfBirth?: Date;
 
   createdAt?: Date;

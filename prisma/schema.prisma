@@ -12,25 +12,27 @@ datasource db {
 }
 
 model User {
-  id               Int      @id @default(autoincrement())
+  id               Int       @id @default(autoincrement())
   password         String
   firstName        String
   lastName         String
-  email            String   @unique
-  isEmailValidated Boolean  @default(false)
-  dateOfBirth      DateTime @default(now())
-  createdAt        DateTime @default(now())
+  email            String    @unique
+  isEmailValidated Boolean   @default(false)
+  dateOfBirth      DateTime  @default(now())
+  createdAt        DateTime  @default(now())
   stripeCustomerId String?
-
-  roles String[] @default(["Customer"])
+  avatarUrl        String?
+  roles            String[]  @default(["Customer"])
+  Invoice          Invoice[]
+  Review           Review[]
 }
 
 model Product {
   id          Int    @id @default(autoincrement())
   productName String @unique
 
-  publisherId Int
-  publisher   Publisher? @relation(fields: [publisherId], references: [id])
+  platformId Int
+  platform   Platform? @relation(fields: [platformId], references: [id])
 
   categoryId    Int
   category      Category?       @relation(fields: [categoryId], references: [id])
@@ -42,14 +44,16 @@ model Product {
   available     Int
   stockId       Int
   stockStatus   StockStatus     @relation(fields: [stockId], references: [id])
+  Rating        Rating[]
+  Review        Review[]
 
   @@index([productName])
 }
 
-model Publisher {
-  id            Int       @id @default(autoincrement())
-  publisherName String    @unique
-  Product       Product[]
+model Platform {
+  id           Int       @id @default(autoincrement())
+  platformName String    @unique
+  Product      Product[]
 }
 
 model Category {
@@ -78,4 +82,43 @@ model StockStatus {
   id         Int       @id @default(autoincrement())
   statusName String
   product    Product[]
+}
+
+model Invoice {
+  id            Int             @id @default(autoincrement())
+  createdAt     DateTime        @default(now())
+  total         Int
+  userId        Int
+  user          User            @relation(fields: [userId], references: [id])
+  status        String?
+  InvoiceDetail InvoiceDetail[]
+}
+
+model InvoiceDetail {
+  id        Int      @id @default(autoincrement())
+  amount    Int
+  Price     Float
+  Code      String[]
+  invoiceId Int
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+}
+
+model Review {
+  id          Int      @id @default(autoincrement())
+  comment     String
+  isPurchased Boolean  @default(false)
+  rating      Int
+  postedAt    DateTime @default(now())
+  productId   Int
+  Product     Product  @relation(fields: [productId], references: [id])
+  userId      Int
+  User        User     @relation(fields: [userId], references: [id])
+}
+
+model Rating {
+  id        Int     @id @default(autoincrement())
+  name      String
+  total     Int
+  productId Int
+  Product   Product @relation(fields: [productId], references: [id])
 }

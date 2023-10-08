@@ -16,8 +16,8 @@ export class StripeController {
 
   @UseGuards(JwtAuthGuardApi)
   @Post('charge')
-  charge(@Body() body) {
-    return this.stripeService.charge(
+  async charge(@Body() body) {
+    return await this.stripeService.charge(
       body.total,
       body.stripeCustomerId,
       body.paymentMethodId,
@@ -26,8 +26,8 @@ export class StripeController {
 
   @UseGuards(JwtAuthGuardApi)
   @Post('attach-card')
-  attachCreditCard(@Body() body) {
-    return this.stripeService.attachCreditCard(
+  async attachCreditCard(@Body() body) {
+    return await this.stripeService.attachCreditCard(
       body.stripeCustomerId,
       body.paymentMethodId,
     );

@@ -6,28 +6,20 @@ CREATE TABLE "User" (
     "lastName" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "isEmailValidated" BOOLEAN NOT NULL DEFAULT false,
-    "phone" TEXT NOT NULL,
-    "address" TEXT NOT NULL,
     "dateOfBirth" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "stripeCustomerId" TEXT,
+    "avatarUrl" TEXT,
     "roles" TEXT[] DEFAULT ARRAY['Customer']::TEXT[],
 
     CONSTRAINT "User_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "RefeshToken" (
-    "id" SERIAL NOT NULL,
-    "token" TEXT NOT NULL,
-
-    CONSTRAINT "RefeshToken_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Product" (
     "id" SERIAL NOT NULL,
     "productName" TEXT NOT NULL,
-    "publisherId" INTEGER NOT NULL,
+    "platformId" INTEGER NOT NULL,
     "categoryId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "image" TEXT NOT NULL,
@@ -40,11 +32,11 @@ CREATE TABLE "Product" (
 );
 
 -- CreateTable
-CREATE TABLE "Publisher" (
+CREATE TABLE "Platform" (
     "id" SERIAL NOT NULL,
-    "publisherName" TEXT NOT NULL,
+    "platformName" TEXT NOT NULL,
 
-    CONSTRAINT "Publisher_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "Platform_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -58,7 +50,7 @@ CREATE TABLE "Category" (
 -- CreateTable
 CREATE TABLE "Code" (
     "id" SERIAL NOT NULL,
-    "code" TEXT NOT NULL,
+    "code" TEXT[],
     "productOptionId" INTEGER NOT NULL,
 
     CONSTRAINT "Code_pkey" PRIMARY KEY ("id")
@@ -85,22 +77,19 @@ CREATE TABLE "StockStatus" (
 CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_phone_key" ON "User"("phone");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Product_productName_key" ON "Product"("productName");
 
 -- CreateIndex
 CREATE INDEX "Product_productName_idx" ON "Product"("productName");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Publisher_publisherName_key" ON "Publisher"("publisherName");
+CREATE UNIQUE INDEX "Platform_platformName_key" ON "Platform"("platformName");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Category_categoryName_key" ON "Category"("categoryName");
 
 -- AddForeignKey
-ALTER TABLE "Product" ADD CONSTRAINT "Product_publisherId_fkey" FOREIGN KEY ("publisherId") REFERENCES "Publisher"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Product" ADD CONSTRAINT "Product_platformId_fkey" FOREIGN KEY ("platformId") REFERENCES "Platform"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Product" ADD CONSTRAINT "Product_categoryId_fkey" FOREIGN KEY ("categoryId") REFERENCES "Category"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

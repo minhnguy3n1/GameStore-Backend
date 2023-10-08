@@ -9,24 +9,24 @@ import { UpdateProductDto } from './dto/update-product.dt';
 export class ProductService {
   constructor(private prisma: PrismaService) {}
 
-  createProduct(dto: CreateProductDto) {
+  async createProduct(createProductDto: CreateProductDto, imageURL) {
     const {
       productName,
-      publisherId,
+      platformId,
       categoryId,
-      image,
       createdAt,
       price,
       description,
-      statusId,
+      stockId,
       available,
-    } = dto;
-    return this.prisma.product.create({
+    } = createProductDto;
+    console.log(imageURL);
+    return await this.prisma.product.create({
       data: {
         productName: productName,
-        publisher: {
+        platform: {
           connect: {
-            id: Number(publisherId),
+            id: Number(platformId),
           },
         },
         category: {
@@ -36,23 +36,30 @@ export class ProductService {
         },
         stockStatus: {
           connect: {
-            id: Number(statusId),
+            id: Number(stockId),
           },
         },
         available: Number(available),
         price: Number(price),
         description: description,
-        image: image,
+        image: imageURL,
         createdAt: createdAt,
       },
     });
   }
-  getAllProducts() {
-    const products = this.prisma.product.findMany({
+
+  async createManyProducts(products) {
+    return await this.prisma.product.createMany({
+      data: products
+    });
+  }
+
+  async getAllProducts() {
+    return await this.prisma.product.findMany({
       include: {
-        publisher: {
+        platform: {
           select: {
-            publisherName: true,
+            platformName: true,
           },
         },
         category: {
@@ -67,7 +74,6 @@ export class ProductService {
         },
       },
     });
-    return products;
   }
 
   async getProductById(productId: number) {
@@ -85,9 +91,9 @@ export class ProductService {
         id: productId,
       },
       include: {
-        publisher: {
+        platform: {
           select: {
-            publisherName: true,
+            platformName: true,
           },
         },
         category: {
@@ -106,7 +112,7 @@ export class ProductService {
   }
 
   async getProductByName(dto: string) {
-    const tsquerySpecialChars = /[()|&:*!]/g;
+    const tsquerySpecialChars = /[()|&:*!-]/g;
     const product = await this.prisma.product.findMany({
       where: {
         productName: {
@@ -134,9 +140,9 @@ export class ProductService {
         },
       },
       include: {
-        publisher: {
+        platform: {
           select: {
-            publisherName: true,
+            platformName: true,
           },
         },
         category: {
@@ -157,7 +163,7 @@ export class ProductService {
   async updateProduct(productId: number, dto: UpdateProductDto) {
     const {
       productName,
-      publisherId,
+      platformId,
       categoryId,
       statusId,
       price,
@@ -182,9 +188,9 @@ export class ProductService {
       },
       data: {
         productName: productName,
-        publisher: {
+        platform: {
           connect: {
-            id: Number(publisherId),
+            id: Number(platformId),
           },
         },
         category: {
@@ -205,7 +211,6 @@ export class ProductService {
       },
     });
   }
-
 
   async deleteProduct(productId: number) {
     //Get Product by Id

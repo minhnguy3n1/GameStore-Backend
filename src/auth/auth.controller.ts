@@ -41,10 +41,10 @@ export class AuthController {
     });
   }
 
-  @Post('check-register')
-  async checkInputRegister(@Body() checkUserInput: CheckUserInput) {
-    return this.userService.checkCreateUser(checkUserInput);
-  }
+  // @Post('check-register')
+  // async checkInputRegister(@Body() checkUserInput: CheckUserInput) {
+  //   return this.userService.checkCreateUser(checkUserInput);
+  // }
 
   @UseGuards(JwtAuthGuardApi)
   @Get('me')
