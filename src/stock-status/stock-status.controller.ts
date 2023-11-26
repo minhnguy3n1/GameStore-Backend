@@ -19,8 +19,13 @@ export class ProductStatusController {
   constructor(private stockStatusService: StockStatusService) {}
 
   @Post()
-  createStockStatus(@Body() dto: CreateStockStatusDto) {
-    return this.stockStatusService.createProductStatus(dto);
+  async createStockStatus(@Body() dto: CreateStockStatusDto) {
+    return await this.stockStatusService.createProductStatus(dto);
+  }
+
+  @Post('add-many')
+  async createManyStockStatus(@Body() stockStatus) {
+    return await this.stockStatusService.createManyProductStatus(stockStatus);
   }
 
   @Get()

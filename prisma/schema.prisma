@@ -15,37 +15,37 @@ model User {
   id               Int       @id @default(autoincrement())
   password         String
   firstName        String
-  lastName         String
+  lastName         String?
   email            String    @unique
   isEmailValidated Boolean   @default(false)
-  dateOfBirth      DateTime  @default(now())
   createdAt        DateTime  @default(now())
   stripeCustomerId String?
   avatarUrl        String?
   roles            String[]  @default(["Customer"])
   Invoice          Invoice[]
-  Review           Review[]
 }
 
 model Product {
   id          Int    @id @default(autoincrement())
   productName String @unique
 
-  platformId Int
-  platform   Platform? @relation(fields: [platformId], references: [id])
-
+  platformId    Int
+  platform      Platform?       @relation(fields: [platformId], references: [id])
   categoryId    Int
   category      Category?       @relation(fields: [categoryId], references: [id])
-  ProductOption ProductOption[]
   createdAt     DateTime        @default(now())
   image         String
   description   String
   price         Float
-  available     Int
+  available     Int             @default(0)
   stockId       Int
+  totalReview   Int?            @default(0)
+  totalRating   Float?          @default(0)
   stockStatus   StockStatus     @relation(fields: [stockId], references: [id])
-  Rating        Rating[]
-  Review        Review[]
+  rating        Rating[]
+  review        Review[]
+  invoiceDetail InvoiceDetail[]
+  Code          Code[]
 
   @@index([productName])
 }
@@ -53,29 +53,20 @@ model Product {
 model Platform {
   id           Int       @id @default(autoincrement())
   platformName String    @unique
-  Product      Product[]
+  product      Product[]
 }
 
 model Category {
   id           Int       @id @default(autoincrement())
   categoryName String    @unique
-  Product      Product[]
+  product      Product[]
 }
 
 model Code {
-  id              Int           @id @default(autoincrement())
-  code            String[]
-  productOptionId Int
-  productOption   ProductOption @relation(fields: [productOptionId], references: [id])
-}
-
-model ProductOption {
-  id         Int     @id @default(autoincrement())
-  optionName String
-  productId  Int
-  product    Product @relation(fields: [productId], references: [id])
-
-  Code Code[]
+  code      String[]
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  @@id([productId])
 }
 
 model StockStatus {
@@ -87,38 +78,42 @@ model StockStatus {
 model Invoice {
   id            Int             @id @default(autoincrement())
   createdAt     DateTime        @default(now())
-  total         Int
+  total         Float
   userId        Int
   user          User            @relation(fields: [userId], references: [id])
   status        String?
-  InvoiceDetail InvoiceDetail[]
+  invoiceDetail InvoiceDetail[]
 }
 
 model InvoiceDetail {
-  id        Int      @id @default(autoincrement())
   amount    Int
-  Price     Float
-  Code      String[]
+  price     Float
+  code      String[]
   invoiceId Int
   invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@id([invoiceId, productId])
 }
 
 model Review {
-  id          Int      @id @default(autoincrement())
-  comment     String
-  isPurchased Boolean  @default(false)
-  rating      Int
-  postedAt    DateTime @default(now())
-  productId   Int
-  Product     Product  @relation(fields: [productId], references: [id])
-  userId      Int
-  User        User     @relation(fields: [userId], references: [id])
+  id           Int      @id @default(autoincrement())
+  comment      String
+  isPurchased  Boolean  @default(false)
+  rating       Int      @default(0)
+  postedAt     DateTime @default(now())
+  productId    Int
+  product      Product  @relation(fields: [productId], references: [id])
+  userFullName String
+  avatarUrl    String?
 }
 
 model Rating {
-  id        Int     @id @default(autoincrement())
   name      String
-  total     Int
+  starCount Int     @default(0)
   productId Int
-  Product   Product @relation(fields: [productId], references: [id])
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@id([name, productId])
 }

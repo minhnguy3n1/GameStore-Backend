@@ -5,6 +5,7 @@ import {
   UploadedFile,
   UseInterceptors,
   Body,
+  Delete,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileService } from './file.service';
@@ -15,9 +16,12 @@ export class FileController {
 
   @Post('upload-image')
   @UseInterceptors(FileInterceptor('image'))
-  uploadFile(@UploadedFile() file: Express.Multer.File, @Body() product) {
-    console.log(product.data)
-    console.log(file);
-    // return this.fileService.uploadPublicFile(file);
+  uploadFile(@UploadedFile() file: Express.Multer.File) {
+    return this.fileService.uploadPublicFile(file);
+  }
+
+  @Delete()
+  deleteFile(@Body() body) {
+    return this.fileService.deletePublicFile(body);
   }
 }

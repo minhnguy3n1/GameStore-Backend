@@ -17,9 +17,9 @@ export class CreateProductDto {
   @IsNotEmpty()
   price: number;
 
-  available?: number;
-
   createdAt: Date;
 
   stockId?: number;
+
+  image?: string
 }

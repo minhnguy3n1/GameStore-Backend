@@ -12,11 +12,5 @@ export class CreateUserInput {
   @IsEmail()
   email: string;
 
-  phone: string;
-
-  address: string;
-
-  dateOfBirth?: Date;
-
-  createdAt?: Date;
+  avatarUrl: string;
 }

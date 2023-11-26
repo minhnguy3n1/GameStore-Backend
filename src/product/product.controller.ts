@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { FileService } from 'src/file/file.service';
-import { UpdateProductDto } from './dto/update-product.dt';
 import { ProductService } from './product.service';
 
 @Controller('product')
@@ -28,29 +27,41 @@ export class ProductController {
     return await this.productService.getAllProducts();
   }
 
-  @Get(':id')
-  getProductById(@Param('id', ParseIntPipe) productId) {
-    return this.productService.getProductById(productId);
-  }
-
   @Get('search/:name')
   async getProductByName(@Param('name') name: string) {
     return await this.productService.getProductByName(name);
   }
+  @Post('add-many')
+  async createManyProducts(@Body() products) {
+    return await this.productService.createManyProducts(products);
+  }
 
   @Post()
   @UseInterceptors(FileInterceptor('image'))
-  async createProduct(@UploadedFile() image: Express.Multer.File, @Body() product) {
-    const imageURL = await this.fileService.uploadPublicFile(image);
-    return this.productService.createProduct(JSON.parse(product.data), imageURL);
+  async createProduct(
+    @UploadedFile() image: Express.Multer.File,
+    @Body() product,
+  ) {
+    if (image) {
+  product.image = await this.fileService.uploadPublicFile(image);
+}
+    return this.productService.createProduct(
+      JSON.parse(product.data),
+    );
   }
 
   @Put(':id')
-  updateProduct(
+  @UseInterceptors(FileInterceptor('image'))
+  async updateProduct(
     @Param('id', ParseIntPipe) productId,
-    @Body() dto: UpdateProductDto,
+    @Body() dto,
+    @UploadedFile() image: Express.Multer.File,
   ) {
-    return this.productService.updateProduct(productId, dto);
+    if (image) {
+      dto.image = await this.fileService.uploadPublicFile(image);
+    }
+    
+    return await this.productService.updateProduct(productId, JSON.parse(dto.data));
   }
 
   @Delete(':id')

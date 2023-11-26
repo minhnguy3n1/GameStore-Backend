@@ -9,4 +9,8 @@ export class FileService {
   async uploadPublicFile(file: Express.Multer.File): Promise<string> {
     return await this.storageProvider.upload(file, 'images', file.originalname);
   }
+
+  async deletePublicFile(data) {
+    return await this.storageProvider.delete(data.fileURL);
+  }
 }

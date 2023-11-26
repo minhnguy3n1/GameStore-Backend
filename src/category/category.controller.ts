@@ -23,13 +23,13 @@ export class CategoryController {
   }
 
   @Post()
-  createCategory(@Body() dto: CreateCategoryDto) {
-    return this.categoryService.createCategory(dto);
+  async createCategory(@Body() dto: CreateCategoryDto) {
+    return await this.categoryService.createCategory(dto);
   }
 
   @Post("add-many")
-  createManyCategories(@Body() categories) {
-    return this.categoryService.createManyCategories(categories);
+   async createManyCategories(@Body() categories) {
+    return await this.categoryService.createManyCategories(categories);
   }
 
   @Put(':id')
@@ -43,5 +43,10 @@ export class CategoryController {
   @Delete(':id')
   deleteCategory(@Param('id', ParseIntPipe) categoryId: number) {
     return this.categoryService.deleteCategory(categoryId);
+  }
+
+  @Delete()
+  async deleteAllCategories() {
+    return await this.categoryService.deleteAllCategories()
   }
 }

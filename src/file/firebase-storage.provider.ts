@@ -1,10 +1,11 @@
 /* eslint-disable prettier/prettier */
-import { Injectable } from '@nestjs/common';
+import { HttpCode, Injectable, NotFoundException } from '@nestjs/common';
 import {
+  getDownloadURL,
   getStorage,
   ref,
   uploadBytesResumable,
-  getDownloadURL,
+  deleteObject,
 } from 'firebase/storage';
 
 @Injectable()
@@ -32,4 +33,18 @@ export class FirebaseStorageProvider {
 
     return downloadURL;
   }
+
+  public async delete(fileURL) {
+    const storage = getStorage();
+
+    const fileRef = ref(storage, fileURL)
+    return deleteObject(fileRef)
+      .then(() => {
+        return HttpCode(200);
+      })
+      .catch(() => {
+        throw new NotFoundException('Cannot found fileUrl');
+      });
+  }
 }
+

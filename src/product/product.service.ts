@@ -4,24 +4,19 @@ import { NotFoundException } from '@nestjs/common/exceptions';
 import { PrismaService } from 'prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dt';
+import { ReviewService } from 'src/review/review.service';
+import { CDKeyService } from 'src/cdkey/cdkey.service';
+import { FileService } from 'src/file/file.service';
 
 @Injectable()
 export class ProductService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private reviewService: ReviewService, private cdkeyService: CDKeyService, private fileService: FileService) {}
 
-  async createProduct(createProductDto: CreateProductDto, imageURL) {
+  async createProduct(createProductDto: CreateProductDto) {
     const {
-      productName,
-      platformId,
-      categoryId,
-      createdAt,
-      price,
-      description,
-      stockId,
-      available,
+      D
     } = createProductDto;
-    console.log(imageURL);
-    return await this.prisma.product.create({
+    const newProduct = await this.prisma.product.create({
       data: {
         productName: productName,
         platform: {
@@ -39,13 +34,18 @@ export class ProductService {
             id: Number(stockId),
           },
         },
-        available: Number(available),
         price: Number(price),
         description: description,
-        image: imageURL,
+        image: image,
         createdAt: createdAt,
       },
     });
+
+    await this.reviewService.autoGenerateRatingCount(newProduct.id)
+
+    await this.cdkeyService.createCDKey(newProduct.id)
+
+    return newProduct;
   }
 
   async createManyProducts(products) {
@@ -106,7 +106,7 @@ export class ProductService {
             statusName: true,
           },
         },
-        ProductOption: {},
+        review:{},
       },
     });
   }
@@ -155,7 +155,12 @@ export class ProductService {
             statusName: true,
           },
         },
-        ProductOption: {},
+        review: true,
+        rating: {
+          orderBy: {
+            name: 'asc',
+          },
+        },
       },
     });
   }
@@ -168,8 +173,8 @@ export class ProductService {
       statusId,
       price,
       description,
-      image,
       available,
+      image
     } = dto;
     //Get Product by Id
     const product = await this.prisma.product.findUnique({
@@ -177,6 +182,10 @@ export class ProductService {
         id: productId,
       },
     });
+
+    if (image !== product.image) {
+      await this.fileService.deletePublicFile(product.image);
+    } 
 
     if (!product) {
       throw new ForbiddenException('Product Not Found');
@@ -213,16 +222,19 @@ export class ProductService {
   }
 
   async deleteProduct(productId: number) {
-    //Get Product by Id
+    
     const product = await this.prisma.product.findUnique({
       where: {
         id: productId,
       },
     });
 
+    await this.fileService.deletePublicFile(product.image);
+
     if (!product || product.id !== productId) {
       throw new ForbiddenException('Product Not Found');
     }
+    
     return this.prisma.product.delete({
       where: {
         id: productId,

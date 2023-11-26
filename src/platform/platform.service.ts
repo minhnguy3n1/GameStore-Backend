@@ -11,7 +11,7 @@ export class PlatformService {
   async createPlatform(createPlatformDto: CreatePlatformDto) {
     return await this.prisma.platform.create({
       data: {
-        ...createPlatformDto,
+        platformName: createPlatformDto.platformName,
       },
     });
   }
@@ -25,7 +25,7 @@ export class PlatformService {
     return await this.prisma.platform.findMany();
   }
 
-  async updatePublisher(
+  async updatePlatform(
     platformId: number,
     updatePlatformDto: UpdatePlatformDto,
   ) {
@@ -49,7 +49,7 @@ export class PlatformService {
     });
   }
 
-  async deletePublisher(publisherId: number) {
+  async deletePlatform(publisherId: number) {
     //Get publisher by Id
     const publisher = await this.prisma.platform.findUnique({
       where: {

@@ -16,10 +16,11 @@ export class AuthService {
   async validateUser(email: string, password: string) {
     const user = await this.userService.findByEmail(email);
 
+
     if (!user) {
       return null;
     }
-    const checkPassword = await bcrypt.compare(password, user.password);
+    const checkPassword = await bcrypt.compareSync(password, user.password);
     if (!checkPassword) {
       return null;
     }
@@ -72,7 +73,7 @@ export class AuthService {
     { accessToken: string; refreshToken: string; user: object } | undefined
   > {
     const user = await this.userService.findByEmail(email);
-    return this.newRefreshAndAccessToken(user, values);
+    return await this.newRefreshAndAccessToken(user, values);
   }
 
   private async newRefreshAndAccessToken(
@@ -91,7 +92,7 @@ export class AuthService {
     this.refreshTokens.push(refreshObject);
     user.password = undefined;
 
-    return {
+    return await {
       refreshToken: refreshObject.sign(),
       accessToken: sign(
         {

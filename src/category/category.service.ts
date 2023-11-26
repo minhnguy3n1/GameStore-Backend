@@ -11,13 +11,13 @@ export class CategoryService {
   createCategory(category: CreateCategoryDto) {
     return this.prisma.category.create({
       data: {
-        ...category,
+        categoryName: category.categoryName,
       },
     });
   }
 
-  createManyCategories(categories) {
-    return this.prisma.category.createMany({
+  async createManyCategories(categories) {
+    return await this.prisma.category.createMany({
       data: categories,
     });
   }
@@ -66,5 +66,9 @@ export class CategoryService {
         id: categoryId,
       },
     });
+  }
+
+  async deleteAllCategories() {
+    return await this.prisma.category.deleteMany();
   }
 }

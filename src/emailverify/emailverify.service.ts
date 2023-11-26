@@ -13,9 +13,8 @@ export class EmailverifyService {
     private userService: UserService,
     private configService: ConfigService,
   ) {}
-  async sendEmailVerify(email: string, lastName: string) {
+  async sendEmailVerify(email: string) {
     const token = sign(email, process.env.JWT_VERIFICATION_TOKEN_SECRET);
-    console.log(email);
 
     const url = `${process.env.EMAIL_CONFIRMATION_URL}?token=${token}`;
 
@@ -27,9 +26,8 @@ export class EmailverifyService {
         from: 'minhnngcd191326@fpt.edu.vn',
         subject: 'Verify your account',
         text: 'Verify your account',
-        template: './welcome.hbs',
+        template: './confirmation.hbs',
         context: {
-          name: lastName,
           url: url,
         },
       })
@@ -76,12 +74,12 @@ export class EmailverifyService {
     return this.mailerService
       .sendMail({
         to: email,
-        from: 'minhnngcd191326@fpt.edu.vn',
+        from: `${this.configService.get('EMAIL_TO_SEND')}`,
         subject: 'Reset password for Game Store account',
         text: 'Reset password',
         template: './reset-password.hbs',
         context: {
-          name: user.lastName,
+          firstName: user.firstName,
           url: url,
         },
       })

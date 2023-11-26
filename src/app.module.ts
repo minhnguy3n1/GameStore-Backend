@@ -7,7 +7,6 @@ import { PrismaService } from './../prisma/prisma.service';
 import { AuthModule } from './auth/auth.module';
 import { CategoryModule } from './category/category.module';
 import { EmailverifyModule } from './emailverify/emailverify.module';
-import { ProductOptionModule } from './product-option/product-option.module';
 import { ProductModule } from './product/product.module';
 import { PublisherModule } from './platform/platform.module';
 import { StockStatusModule } from './stock-status/stock-status.module';
@@ -16,10 +15,11 @@ import { StripeService } from './stripe/stripe.service';
 import { UserModule } from './user/user.module';
 import { FileModule } from './file/file.module';
 import { InvoiceModule } from './invoice/invoice.module';
-import { InvoiceDetailModule } from './invoice-detail/invoice-detail.module';
 import { ReviewService } from './review/review.service';
 import { ReviewController } from './review/review.controller';
 import { ReviewModule } from './review/review.module';
+import { CdkeyModule } from './cdkey/cdkey.module';
+import { emailConfig } from './config/email.config';
 
 @Module({
   imports: [
@@ -28,30 +28,17 @@ import { ReviewModule } from './review/review.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    MailerModule.forRoot({
-      transport: `smtp://${process.env.EMAIL}:${process.env.EMAIL_PASS}@${process.env.EMAIL_DOMAIN}`,
-      defaults: {
-        from: '"nest-modules" <justen7@ethereal.email>',
-      },
-      template: {
-        dir: process.cwd() + '/src/templates/email/',
-        adapter: new HandlebarsAdapter(),
-        options: {
-          strict: true,
-        },
-      },
-    }),
+    MailerModule.forRoot(emailConfig),
     EmailverifyModule,
     ProductModule,
     CategoryModule,
     PublisherModule,
-    ProductOptionModule,
     StockStatusModule,
     StripeModule,
     FileModule,
     InvoiceModule,
-    InvoiceDetailModule,
     ReviewModule,
+    CdkeyModule,
   ],
   providers: [PrismaService, StripeService, ReviewService],
   controllers: [ReviewController],

@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 import {
   BadRequestException,
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
@@ -13,11 +14,17 @@ import SetNewPasswordDto from 'src/auth/dto/set-new-password.input';
 import { CheckUserInput } from './dto/check-user.input';
 import { CreateUserInput } from './dto/create-user.input';
 import changePasswordDto from 'src/auth/dto/change-password.dto';
+import { StripeService } from 'src/stripe/stripe.service';
+import { FileService } from 'src/file/file.service';
 
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private stripe: StripeService,
+    private fileService: FileService,
+  ) {}
 
   async findAll() {
     return await this.prisma.user.findMany({
@@ -28,6 +35,7 @@ export class UserService {
         email: true,
         roles: true,
         isEmailValidated: true,
+        avatarUrl: true,
       },
     });
   }
@@ -38,7 +46,51 @@ export class UserService {
         email: String(email),
       },
     });
+    if (!user) {
+      throw new HttpException(
+        'Email or Password incorrect',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
     return user;
+  }
+
+  async deleteAllUsers() {
+    return this.prisma.user.deleteMany();
+  }
+
+  async createManyUser(users) {
+    users.forEach(async (user) => {
+      const stripeCustomer = await this.stripe.createCustomer(
+        user.firstName,
+        user.email,
+      );
+
+      user.stripeCustomerId = (await stripeCustomer).id;
+
+      const userCheckAvailable = await this.prisma.user.findFirst({
+        where: {
+          OR: [{ email: user.email }],
+        },
+      });
+
+      if (userCheckAvailable) {
+        throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
+      }
+      try {
+        const password = await bcrypt.hash(user.password, 10);
+        return await this.prisma.user.create({
+          data: {
+            ...user,
+            password: password,
+          },
+        });
+      } catch {
+        (e) => {
+          throw e;
+        };
+      }
+    });
   }
 
   async getUserById(id: number): Promise<User> {
@@ -61,20 +113,55 @@ export class UserService {
   async createUser(createUserInput) {
     const userCheckAvailable = await this.prisma.user.findFirst({
       where: {
-        OR: [
-          { email: createUserInput.email },
-        ],
+        OR: [{ email: createUserInput.email }],
       },
     });
 
     if (userCheckAvailable) {
       throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
     }
-    try {
+
+    const stripeCustomer = await this.stripe.createCustomer(
+      createUserInput.firstName,
+      createUserInput.email,
+    );
+
+    createUserInput.stripeCustomerId = stripeCustomer.id;
+
       const password = await bcrypt.hash(createUserInput.password, 10);
       return this.prisma.user.create({
         data: {
           ...createUserInput,
+          password: password,
+        },
+      });
+  }
+
+  async updateUser(updateUserInput) {
+    const { avatarUrl } = updateUserInput;
+    const userCheckAvailable = await this.prisma.user.findFirst({
+      where: {
+        id: updateUserInput.id,
+      },
+    });
+
+    if (avatarUrl !== userCheckAvailable.avatarUrl) {
+    await this.fileService.deletePublicFile(userCheckAvailable.avatarUrl);
+      
+    }
+
+    if (!userCheckAvailable) {
+      throw new ForbiddenException('Product Not Found');
+    }
+    try {
+      const password = await bcrypt.hash(updateUserInput.password, 10);
+      return this.prisma.user.update({
+        where: {
+          id: updateUserInput.id,
+        },
+        data: {
+          avatarUrl: avatarUrl,
+          ...updateUserInput,
           password: password,
         },
       });
@@ -84,38 +171,6 @@ export class UserService {
       };
     }
   }
-
-  // async checkCreateUser(createUserInput: CheckUserInput) {
-  //   console.log(createUserInput);
-
-  //   const existEmail = await this.prisma.user.findFirst({
-  //     where: {
-  //       email: createUserInput.email,
-  //     },
-  //   });
-  //   const existPhone = await this.prisma.user.findFirst({
-  //     where: {
-  //       phone: createUserInput.phone,
-  //     },
-  //   });
-
-  //   let resultEmailCheck = true;
-  //   let resultPhoneCheck = true;
-
-  //   if (existEmail) {
-  //     resultEmailCheck = false;
-  //   }
-  //   if (existPhone) {
-  //     resultPhoneCheck = false;
-  //   }
-
-  //   const result = {
-  //     acceptEmailCheck: resultEmailCheck,
-  //     acceptPhoneCheck: resultPhoneCheck,
-  //   };
-
-  //   return result;
-  // }
 
   async markEmailAsConfirmed(email: string) {
     return this.prisma.user.update({
@@ -159,12 +214,12 @@ export class UserService {
   async changePassword(changePasswordDto: changePasswordDto, userId: number) {
     const response = await this.prisma.user.findUnique({
       where: {
-        id: userId
+        id: userId,
       },
       select: {
         password: true,
-      }
-    })
+      },
+    });
 
     if (!bcrypt.compareSync(changePasswordDto.oldPassword, response.password)) {
       throw new BadRequestException('Old Password not correct!');
@@ -184,6 +239,14 @@ export class UserService {
       },
       data: {
         password: newPassword,
+      },
+    });
+  }
+
+  async deleteUserById(userId) {
+    return this.prisma.user.delete({
+      where: {
+        id: userId,
       },
     });
   }

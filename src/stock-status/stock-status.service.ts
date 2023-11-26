@@ -17,6 +17,12 @@ export class StockStatusService {
     });
   }
 
+  async createManyProductStatus(productStatuses) {
+    return await this.prisma.stockStatus.createMany({
+      data: productStatuses,
+    });
+  }
+
   getAllProductStatus() {
     return this.prisma.stockStatus.findMany();
   }

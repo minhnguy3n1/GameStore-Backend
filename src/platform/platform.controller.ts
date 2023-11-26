@@ -18,7 +18,7 @@ export class PublisherController {
   constructor(private platformService: PlatformService) {}
 
   @Get()
-  getAllPublishers() {
+  getAllPlatforms() {
     return this.platformService.getAllPlatforms();
   }
 
@@ -33,14 +33,14 @@ export class PublisherController {
   }
 
   @Put(':id')
-  updatePublisher(
+  updatePlatform(
     @Param('id', ParseIntPipe) platformId: number,
     @Body() updatePlatformDto: UpdatePlatformDto,
   ) {
-    return this.platformService.updatePublisher(platformId, updatePlatformDto);
+    return this.platformService.updatePlatform(platformId, updatePlatformDto);
   }
   @Delete(':id')
-  deletePublisher(@Param('id', ParseIntPipe) platformId: number) {
-    return this.platformService.deletePublisher(platformId);
+  deletePlatform(@Param('id', ParseIntPipe) platformId: number) {
+    return this.platformService.deletePlatform(platformId);
   }
 }

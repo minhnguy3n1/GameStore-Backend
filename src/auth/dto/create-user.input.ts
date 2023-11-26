@@ -15,7 +15,5 @@ export class CreateUserInput {
   @IsEmail()
   email: string;
 
-  dateOfBirth?: Date;
-
   createdAt?: Date;
 }
