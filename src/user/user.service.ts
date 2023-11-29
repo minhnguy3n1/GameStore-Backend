@@ -10,13 +10,11 @@ import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { verify } from 'jsonwebtoken';
 import { PrismaService } from 'prisma/prisma.service';
-import SetNewPasswordDto from 'src/auth/dto/set-new-password.input';
-import { CheckUserInput } from './dto/check-user.input';
-import { CreateUserInput } from './dto/create-user.input';
 import changePasswordDto from 'src/auth/dto/change-password.dto';
-import { StripeService } from 'src/stripe/stripe.service';
+import SetNewPasswordDto from 'src/auth/dto/set-new-password.input';
 import { FileService } from 'src/file/file.service';
-
+import { StripeService } from 'src/stripe/stripe.service';
+import { CreateUserInput } from './dto/create-user.input';
 
 @Injectable()
 export class UserService {
@@ -111,6 +109,15 @@ export class UserService {
   }
 
   async createUser(createUserInput) {
+    const {
+      firstName,
+      lastName,
+      email,
+      isEmailValidated,
+      avatarUrl,
+      roles,
+      password,
+    } = createUserInput;
     const userCheckAvailable = await this.prisma.user.findFirst({
       where: {
         OR: [{ email: createUserInput.email }],
@@ -121,55 +128,53 @@ export class UserService {
       throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
     }
 
-    const stripeCustomer = await this.stripe.createCustomer(
-      createUserInput.firstName,
-      createUserInput.email,
-    );
+    const stripeCustomer = await this.stripe.createCustomer(firstName, email);
 
-    createUserInput.stripeCustomerId = stripeCustomer.id;
+    const stripeCustomerId = stripeCustomer.id;
 
-      const password = await bcrypt.hash(createUserInput.password, 10);
-      return this.prisma.user.create({
-        data: {
-          ...createUserInput,
-          password: password,
-        },
-      });
+    const passwordHash = await bcrypt.hash(password, 10);
+    return this.prisma.user.create({
+      data: {
+        firstName: firstName,
+        lastName: lastName,
+        password: passwordHash,
+        email: email,
+        stripeCustomerId: stripeCustomerId,
+        isEmailValidated: isEmailValidated,
+        avatarUrl: avatarUrl,
+        roles: roles,
+      },
+    });
   }
 
   async updateUser(updateUserInput) {
-    const { avatarUrl } = updateUserInput;
+    const { firstName, lastName, email, id, avatarUrl, roles } = updateUserInput;
+
     const userCheckAvailable = await this.prisma.user.findFirst({
       where: {
         id: updateUserInput.id,
       },
     });
 
-    if (avatarUrl !== userCheckAvailable.avatarUrl) {
-    await this.fileService.deletePublicFile(userCheckAvailable.avatarUrl);
-      
-    }
-
     if (!userCheckAvailable) {
-      throw new ForbiddenException('Product Not Found');
+      throw new ForbiddenException('User Not Found');
     }
-    try {
-      const password = await bcrypt.hash(updateUserInput.password, 10);
-      return this.prisma.user.update({
-        where: {
-          id: updateUserInput.id,
-        },
-        data: {
-          avatarUrl: avatarUrl,
-          ...updateUserInput,
-          password: password,
-        },
-      });
-    } catch {
-      (e) => {
-        throw e;
-      };
-    }
+    //     if (userCheckAvailable.avatarUrl) {
+    //  await this.fileService.deletePublicFile(userCheckAvailable.avatarUrl);
+    //     }
+
+    return this.prisma.user.update({
+      where: {
+        id: id,
+      },
+      data: {
+        avatarUrl: avatarUrl,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        roles: roles
+      },
+    });
   }
 
   async markEmailAsConfirmed(email: string) {
@@ -195,20 +200,18 @@ export class UserService {
       process.env.JWT_RESETPASSWORD_TOKEN_SECRET,
     );
 
-    if (typeof payload === 'string') {
-      throw new BadRequestException('Invalid Token');
-    }
-
     const newPassword = await bcrypt.hash(setNewPasswordDto.newPassword, 10);
 
-    return this.prisma.user.update({
+    await this.prisma.user.update({
       where: {
-        email: payload.email,
+        email: payload.toString(),
       },
       data: {
         password: newPassword,
       },
     });
+
+    return 'Reset password successfully'
   }
 
   async changePassword(changePasswordDto: changePasswordDto, userId: number) {

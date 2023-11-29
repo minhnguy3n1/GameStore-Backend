@@ -39,8 +39,8 @@ model Product {
   price         Float
   available     Int             @default(0)
   stockId       Int
-  totalReview   Int?            @default(0)
-  totalRating   Float?          @default(0)
+  totalReview   Int         @default(0)
+  totalRating   Float          @default(0)
   stockStatus   StockStatus     @relation(fields: [stockId], references: [id])
   rating        Rating[]
   review        Review[]

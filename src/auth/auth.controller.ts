@@ -43,7 +43,6 @@ export class AuthController {
     return this.userService.getUserById(request.user.userId);
   }
 
-  @Post()
   @Post('register')
   async register(@Body() createUserInput: CreateUserInput) {
 

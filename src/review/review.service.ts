@@ -36,7 +36,7 @@ export class ReviewService {
       },
       data: {
         totalReview: Number(resultCalculated._count._all),
-        totalRating: Number(resultCalculated._avg.rating),
+        totalRating: Number(resultCalculated._avg.rating.toFixed(1)),
       },
     });
     return reviewCreated;

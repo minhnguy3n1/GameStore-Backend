@@ -42,30 +42,32 @@ export class ProductController {
     @UploadedFile() image: Express.Multer.File,
     @Body() product,
   ) {
+    let imageUrl;
     if (image) {
-  product.image = await this.fileService.uploadPublicFile(image);
+  imageUrl = await this.fileService.uploadPublicFile(image);
 }
     return this.productService.createProduct(
-      JSON.parse(product.data),
+      JSON.parse(product.data), imageUrl
     );
   }
 
   @Put(':id')
   @UseInterceptors(FileInterceptor('image'))
   async updateProduct(
-    @Param('id', ParseIntPipe) productId,
+    @Param('id', ParseIntPipe) productId: number,
     @Body() dto,
     @UploadedFile() image: Express.Multer.File,
   ) {
-    if (image) {
-      dto.image = await this.fileService.uploadPublicFile(image);
-    }
     
-    return await this.productService.updateProduct(productId, JSON.parse(dto.data));
+    const product = JSON.parse(dto.data);
+    if (image) {
+      product.image = await this.fileService.uploadPublicFile(image);
+    }
+    return await this.productService.updateProduct(productId, product);
   }
 
   @Delete(':id')
-  deleteProduct(@Param('id', ParseIntPipe) productId) {
+  deleteProduct(@Param('id', ParseIntPipe) productId: number) {
     return this.productService.deleteProduct(productId);
   }
 }

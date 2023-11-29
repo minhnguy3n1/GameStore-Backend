@@ -12,9 +12,15 @@ import { FileService } from 'src/file/file.service';
 export class ProductService {
   constructor(private prisma: PrismaService, private reviewService: ReviewService, private cdkeyService: CDKeyService, private fileService: FileService) {}
 
-  async createProduct(createProductDto: CreateProductDto) {
+  async createProduct(createProductDto: CreateProductDto, image) {
     const {
-      D
+      productName,
+      platformId,
+      categoryId,
+      stockId,
+      price,
+      description,
+      createdAt,
     } = createProductDto;
     const newProduct = await this.prisma.product.create({
       data: {
@@ -170,10 +176,9 @@ export class ProductService {
       productName,
       platformId,
       categoryId,
-      statusId,
+      stockId,
       price,
       description,
-      available,
       image
     } = dto;
     //Get Product by Id
@@ -182,10 +187,6 @@ export class ProductService {
         id: productId,
       },
     });
-
-    if (image !== product.image) {
-      await this.fileService.deletePublicFile(product.image);
-    } 
 
     if (!product) {
       throw new ForbiddenException('Product Not Found');
@@ -210,10 +211,9 @@ export class ProductService {
 
         stockStatus: {
           connect: {
-            id: Number(statusId),
+            id: Number(stockId),
           },
         },
-        available: Number(available),
         price: Number(price),
         description: description,
         image: image,
@@ -229,13 +229,24 @@ export class ProductService {
       },
     });
 
-    await this.fileService.deletePublicFile(product.image);
 
     if (!product || product.id !== productId) {
       throw new ForbiddenException('Product Not Found');
     }
+
+    await this.prisma.rating.deleteMany({
+      where: {
+        productId: productId
+      }
+    })
     
-    return this.prisma.product.delete({
+    await this.prisma.code.deleteMany({
+      where: {
+        productId: productId,
+      },
+    });
+
+    return await  this.prisma.product.delete({
       where: {
         id: productId,
       },

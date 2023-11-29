@@ -50,13 +50,13 @@ export class UserController {
     @UploadedFile() avatar: Express.Multer.File,
     @Body() createUserInput,
   ) {
+
+    const user = JSON.parse(createUserInput.data);
     if (avatar) {
-      createUserInput.avatarUrl = await this.fileService.uploadPublicFile(
-        avatar,
-      );
+      user.avatarUrl = await this.fileService.uploadPublicFile(avatar);
     }
 
-    return this.userService.createUser(JSON.parse(createUserInput.data));
+    return this.userService.createUser(user);
   }
 
   @Put('update-user')
@@ -65,13 +65,12 @@ export class UserController {
     @UploadedFile() avatar: Express.Multer.File,
     @Body() updateUserInput,
   ) {
+    const user = JSON.parse(updateUserInput.data);
     if (avatar) {
-      updateUserInput.avatarUrl = await this.fileService.uploadPublicFile(
-        avatar,
-      );
+      user.avatarUrl = await this.fileService.uploadPublicFile(avatar);
     }
-
-    return this.userService.updateUser(JSON.parse(updateUserInput.data));
+    
+    return this.userService.updateUser(user);
   }
 
   @Delete(':id')

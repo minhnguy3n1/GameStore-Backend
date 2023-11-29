@@ -11,7 +11,8 @@ export class InvoiceService {
         const invoiceCreated = await this.prisma.invoice.create({
           data: {
               total: invoice.total,
-              userId: invoice.userId,
+            userId: invoice.userId,
+            status: 'paid'
           },
         });
 
@@ -64,6 +65,9 @@ export class InvoiceService {
           },
         },
       },
+      orderBy: {
+        createdAt: 'desc'
+      }
     });
   }
   async getListInvoiceForAdmin() {
@@ -79,8 +83,8 @@ export class InvoiceService {
           select: {
             product: {
               select: {
-                productName: true
-              }
+                productName: true,
+              },
             },
             invoiceId: true,
             amount: true,
@@ -88,6 +92,9 @@ export class InvoiceService {
             code: true,
           },
         },
+      },
+      orderBy: {
+        createdAt: 'desc',
       },
     });
   }

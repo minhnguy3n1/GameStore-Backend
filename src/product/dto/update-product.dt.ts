@@ -16,9 +16,8 @@ export class UpdateProductDto {
 
   @IsNotEmpty()
   price: number;
-  available: number;
 
   image?: string;
 
-  statusId?: number;
+  stockId?: number;
 }

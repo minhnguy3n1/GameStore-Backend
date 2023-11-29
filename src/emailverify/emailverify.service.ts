@@ -18,8 +18,6 @@ export class EmailverifyService {
 
     const url = `${process.env.EMAIL_CONFIRMATION_URL}?token=${token}`;
 
-    console.log(email);
-
     return this.mailerService
       .sendMail({
         to: email,
@@ -49,8 +47,8 @@ export class EmailverifyService {
     try {
       const payload = verify(token, process.env.JWT_VERIFICATION_TOKEN_SECRET);
 
-      if (typeof payload === 'object' && 'email' in payload) {
-        return payload.email;
+      if (payload) {
+        return payload.toString();
       }
       throw new BadRequestException();
     } catch (error) {
@@ -69,7 +67,7 @@ export class EmailverifyService {
 
     const token = sign(email, process.env.JWT_RESETPASSWORD_TOKEN_SECRET);
 
-    const url = `${process.env.RESET_PASSWORD_URL}/${token}`;
+    const url = `${process.env.RESET_PASSWORD_URL}?token=${token}`;
 
     return this.mailerService
       .sendMail({
