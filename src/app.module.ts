@@ -8,38 +8,39 @@ import { AuthModule } from './auth/auth.module';
 import { CategoryModule } from './category/category.module';
 import { EmailverifyModule } from './emailverify/emailverify.module';
 import { ProductModule } from './product/product.module';
-import { PublisherModule } from './publisher/publisher.module';
+import { PublisherModule } from './platform/platform.module';
+import { StockStatusModule } from './stock-status/stock-status.module';
+import { StripeModule } from './stripe/stripe.module';
+import { StripeService } from './stripe/stripe.service';
 import { UserModule } from './user/user.module';
-import { ProductOptionService } from './product-option/product-option.service';
-import { ProductOptionModule } from './product-option/product-option.module';
-import { ProductStatusModule } from './product-status/product-status.module';
+import { FileModule } from './file/file.module';
+import { InvoiceModule } from './invoice/invoice.module';
+import { ReviewService } from './review/review.service';
+import { ReviewController } from './review/review.controller';
+import { ReviewModule } from './review/review.module';
+import { CdkeyModule } from './cdkey/cdkey.module';
+import { emailConfig } from './config/email.config';
 
 @Module({
   imports: [
     UserModule,
     AuthModule,
-    ConfigModule.forRoot(),
-    MailerModule.forRoot({
-      transport:
-        'smtps://minhnngcd191326@fpt.edu.vn:kbgbahsswqbttznd@smtp.gmail.com',
-      defaults: {
-        from: '"nest-modules" <minhnngcd1913266@fpt.edu.vn>',
-      },
-      template: {
-        dir: __dirname + '/templates/email',
-        adapter: new HandlebarsAdapter(),
-        options: {
-          strict: true,
-        },
-      },
+    ConfigModule.forRoot({
+      isGlobal: true,
     }),
+    MailerModule.forRoot(emailConfig),
     EmailverifyModule,
     ProductModule,
     CategoryModule,
     PublisherModule,
-    ProductOptionModule,
-    ProductStatusModule,
+    StockStatusModule,
+    StripeModule,
+    FileModule,
+    InvoiceModule,
+    ReviewModule,
+    CdkeyModule,
   ],
-  providers: [PrismaService, ProductOptionService],
+  providers: [PrismaService, StripeService, ReviewService],
+  controllers: [ReviewController],
 })
 export class AppModule {}

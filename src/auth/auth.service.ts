@@ -1,5 +1,6 @@
-import { MailerService } from '@nestjs-modules/mailer';
-import { BadRequestException, Injectable } from '@nestjs/common';
+/* eslint-disable prettier/prettier */
+/* eslint-disable @typescript-eslint/no-empty-function */
+import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { sign, verify } from 'jsonwebtoken';
@@ -10,31 +11,29 @@ import RefreshToken from './entities/refresh-token.entity';
 export class AuthService {
   private refreshTokens: RefreshToken[] = [];
 
-  constructor(
-    private readonly userService: UserService,
-    private mailerService: MailerService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
-  async validateUser(username: string, password: string) {
-    const user = await this.userService.findByUsername(username);
+  async validateUser(email: string, password: string) {
+    const user = await this.userService.findByEmail(email);
+
 
     if (!user) {
       return null;
     }
-    const checkPassword = await bcrypt.compare(password, user.password);
+    const checkPassword = await bcrypt.compareSync(password, user.password);
     if (!checkPassword) {
       return null;
     }
     return user;
   }
 
-  async refresh(refreshStr: string): Promise<string | undefined> {
+  async refresh(refreshStr: string) {
     const refreshToken = await this.retrieveRefreshToken(refreshStr);
     if (!refreshToken) {
       return undefined;
     }
 
-    const user = await this.userService.findOne(refreshToken.userId);
+    const user = await this.userService.getUserById(refreshToken.userId);
     if (!user) {
       return undefined;
     }
@@ -44,7 +43,11 @@ export class AuthService {
       roles: refreshToken.roles,
     };
 
-    return sign(accessToken, process.env.ACCESS_SECRET, { expiresIn: '1h' });
+    return {
+      accessToken: sign(accessToken, process.env.ACCESS_SECRET, {
+        expiresIn: '5m',
+      }),
+    };
   }
 
   private retrieveRefreshToken(
@@ -64,18 +67,19 @@ export class AuthService {
   }
 
   async login(
-    username: string,
-    password: string,
+    email: string,
     values: { userAgent: string; ipAddress: string },
-  ): Promise<{ accessToken: string; refreshToken: string } | undefined> {
-    const user = await this.userService.findByUsername(username);
-    return this.newRefreshAndAccessToken(user, values);
+  ): Promise<
+    { accessToken: string; refreshToken: string; user: object } | undefined
+  > {
+    const user = await this.userService.findByEmail(email);
+    return await this.newRefreshAndAccessToken(user, values);
   }
 
   private async newRefreshAndAccessToken(
     user: User,
     values: { userAgent: string; ipAddress: string },
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  ): Promise<{ accessToken: string; refreshToken: string; user: User }> {
     const refreshObject = new RefreshToken({
       id:
         this.refreshTokens.length === 0
@@ -86,8 +90,9 @@ export class AuthService {
       roles: user.roles,
     });
     this.refreshTokens.push(refreshObject);
+    user.password = undefined;
 
-    return {
+    return await {
       refreshToken: refreshObject.sign(),
       accessToken: sign(
         {
@@ -96,45 +101,10 @@ export class AuthService {
         },
         process.env.ACCESS_SECRET,
         {
-          expiresIn: '15m',
+          expiresIn: '5m',
         },
       ),
+      user,
     };
-  }
-
-  async logout(refreshStr): Promise<void> {
-    const refreshToken = await this.retrieveRefreshToken(refreshStr);
-
-    if (!refreshToken) {
-      return;
-    }
-    // delete refreshtoken from db
-    this.refreshTokens = this.refreshTokens.filter(
-      (refreshToken) => refreshToken.id !== refreshToken.id,
-    );
-  }
-
-  async sendMailForResetPassword(userId: number) {
-    const user = await this.userService.findOne(userId);
-    if (!user) {
-      throw new BadRequestException();
-    }
-
-    const payload = { email: user.email };
-
-    const token = sign(payload, process.env.JWT_RESETPASSWORD_TOKEN_SECRET);
-
-    const url = `${process.env.RESET_PASSWORD_URL}/${token}`;
-
-    return this.mailerService
-      .sendMail({
-        to: user.email,
-        from: 'minhnngcd191326@fpt.edu.vn',
-        subject: 'Reset password for Game Store account',
-        text: 'Reset password',
-        html: `<b>Reset password</b></br><p>Hi ${user.lastName}, Your recently requested to reset your password for your GameStore account. Click the button below to reset it..</p></br><a href="${url}">Reset your password</a>`,
-      })
-      .then(() => {})
-      .catch(() => {});
   }
 }

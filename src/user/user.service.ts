@@ -1,122 +1,180 @@
 /* eslint-disable prettier/prettier */
 import {
   BadRequestException,
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { PrismaService } from 'prisma/prisma.service';
-import { CreateUserInput } from './dto/create-user.input';
 import * as bcrypt from 'bcrypt';
-import { CheckUserInput } from './dto/check-user.input';
-import SetNewPasswordDto from 'src/auth/dto/set-new-password.input';
 import { verify } from 'jsonwebtoken';
+import { PrismaService } from 'prisma/prisma.service';
+import changePasswordDto from 'src/auth/dto/change-password.dto';
+import SetNewPasswordDto from 'src/auth/dto/set-new-password.input';
+import { FileService } from 'src/file/file.service';
+import { StripeService } from 'src/stripe/stripe.service';
+import { CreateUserInput } from './dto/create-user.input';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private stripe: StripeService,
+    private fileService: FileService,
+  ) {}
 
   async findAll() {
     return await this.prisma.user.findMany({
       select: {
-        username: true,
+        id: true,
+        firstName: true,
+        lastName: true,
         email: true,
-        phone: true,
-      },
-    });
-  }
-
-  async findOne(id: number): Promise<User> {
-    return await this.prisma.user.findUnique({
-      where: {
-        id: id,
+        roles: true,
+        isEmailValidated: true,
+        avatarUrl: true,
       },
     });
   }
 
   async findByEmail(email: string): Promise<User> {
-    return await this.prisma.user.findFirst({
+    const user = await this.prisma.user.findFirstOrThrow({
       where: {
-        email,
+        email: String(email),
       },
+    });
+    if (!user) {
+      throw new HttpException(
+        'Email or Password incorrect',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    return user;
+  }
+
+  async deleteAllUsers() {
+    return this.prisma.user.deleteMany();
+  }
+
+  async createManyUser(users) {
+    users.forEach(async (user) => {
+      const stripeCustomer = await this.stripe.createCustomer(
+        user.firstName,
+        user.email,
+      );
+
+      user.stripeCustomerId = (await stripeCustomer).id;
+
+      const userCheckAvailable = await this.prisma.user.findFirst({
+        where: {
+          OR: [{ email: user.email }],
+        },
+      });
+
+      if (userCheckAvailable) {
+        throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
+      }
+      try {
+        const password = await bcrypt.hash(user.password, 10);
+        return await this.prisma.user.create({
+          data: {
+            ...user,
+            password: password,
+          },
+        });
+      } catch {
+        (e) => {
+          throw e;
+        };
+      }
     });
   }
 
-  async findByUsername(username: string): Promise<User> {
-    return this.prisma.user.findFirst({
+  async getUserById(id: number): Promise<User> {
+    const user = await this.prisma.user.findUnique({
       where: {
-        username,
+        id: id,
       },
     });
+
+    if (user) {
+      user.password = undefined;
+      return user;
+    }
+    throw new HttpException(
+      'User with this id does not exist',
+      HttpStatus.NOT_FOUND,
+    );
   }
 
-  async createUser(createUserInput: CreateUserInput) {
-    const userCheckAvailble = await this.prisma.user.findFirst({
+  async createUser(createUserInput) {
+    const {
+      firstName,
+      lastName,
+      email,
+      isEmailValidated,
+      avatarUrl,
+      roles,
+      password,
+    } = createUserInput;
+    const userCheckAvailable = await this.prisma.user.findFirst({
       where: {
-        OR: [
-          { username: createUserInput.username },
-          { email: createUserInput.email },
-          { phone: createUserInput.phone },
-        ],
+        OR: [{ email: createUserInput.email }],
       },
     });
 
-    if (userCheckAvailble) {
+    if (userCheckAvailable) {
       throw new HttpException('User already exists', HttpStatus.BAD_REQUEST);
     }
-    try {
-      const password = await bcrypt.hash(createUserInput.password, 10);
-      return this.prisma.user.create({
-        data: { ...createUserInput, password: password },
-      });
-    } catch {
-      (e) => {
-        throw e;
-      };
-    }
+
+    const stripeCustomer = await this.stripe.createCustomer(firstName, email);
+
+    const stripeCustomerId = stripeCustomer.id;
+
+    const passwordHash = await bcrypt.hash(password, 10);
+    return this.prisma.user.create({
+      data: {
+        firstName: firstName,
+        lastName: lastName,
+        password: passwordHash,
+        email: email,
+        stripeCustomerId: stripeCustomerId,
+        isEmailValidated: isEmailValidated,
+        avatarUrl: avatarUrl,
+        roles: roles,
+      },
+    });
   }
 
-  async checkCreateUser(createUserInput: CheckUserInput) {
-    console.log(createUserInput);
-    const existUsername = await this.prisma.user.findFirst({
+  async updateUser(updateUserInput) {
+    const { firstName, lastName, email, id, avatarUrl, roles } = updateUserInput;
+
+    const userCheckAvailable = await this.prisma.user.findFirst({
       where: {
-        username: createUserInput.username,
+        id: updateUserInput.id,
       },
     });
 
-    const existEmail = await this.prisma.user.findFirst({
+    if (!userCheckAvailable) {
+      throw new ForbiddenException('User Not Found');
+    }
+    //     if (userCheckAvailable.avatarUrl) {
+    //  await this.fileService.deletePublicFile(userCheckAvailable.avatarUrl);
+    //     }
+
+    return this.prisma.user.update({
       where: {
-        email: createUserInput.email,
+        id: id,
+      },
+      data: {
+        avatarUrl: avatarUrl,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        roles: roles
       },
     });
-    const existPhone = await this.prisma.user.findFirst({
-      where: {
-        phone: createUserInput.phone,
-      },
-    });
-
-    let resultUsernameCheck = true;
-    let resultEmailCheck = true;
-    let resultPhoneCheck = true;
-
-    if (existUsername) {
-      resultUsernameCheck = false;
-    }
-    if (existEmail) {
-      resultEmailCheck = false;
-    }
-    if (existPhone) {
-      resultPhoneCheck = false;
-    }
-
-    const result = {
-      acceptEmailCheck: resultEmailCheck,
-      acceptPhoneCheck: resultPhoneCheck,
-      acceptUsernameCheck: resultUsernameCheck,
-    };
-
-    return result;
   }
 
   async markEmailAsConfirmed(email: string) {
@@ -131,7 +189,9 @@ export class UserService {
   }
 
   async setNewPassword(setNewPasswordDto: SetNewPasswordDto) {
-    if (setNewPasswordDto.password !== setNewPasswordDto.passwordConfirm) {
+    if (
+      setNewPasswordDto.newPassword !== setNewPasswordDto.confirmNewPassword
+    ) {
       throw new BadRequestException('Password confirm not match');
     }
 
@@ -140,18 +200,56 @@ export class UserService {
       process.env.JWT_RESETPASSWORD_TOKEN_SECRET,
     );
 
-    if (typeof payload === 'string') {
-      throw new BadRequestException('Invalid Token');
-    }
+    const newPassword = await bcrypt.hash(setNewPasswordDto.newPassword, 10);
 
-    const newPassword = await bcrypt.hash(setNewPasswordDto.password, 10);
-
-    return this.prisma.user.update({
+    await this.prisma.user.update({
       where: {
-        email: payload.email,
+        email: payload.toString(),
       },
       data: {
         password: newPassword,
+      },
+    });
+
+    return 'Reset password successfully'
+  }
+
+  async changePassword(changePasswordDto: changePasswordDto, userId: number) {
+    const response = await this.prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        password: true,
+      },
+    });
+
+    if (!bcrypt.compareSync(changePasswordDto.oldPassword, response.password)) {
+      throw new BadRequestException('Old Password not correct!');
+    }
+
+    if (
+      changePasswordDto.newPassword !== changePasswordDto.confirmNewPassword
+    ) {
+      throw new BadRequestException('Password confirm not match');
+    }
+
+    const newPassword = await bcrypt.hash(changePasswordDto.newPassword, 10);
+
+    return this.prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        password: newPassword,
+      },
+    });
+  }
+
+  async deleteUserById(userId) {
+    return this.prisma.user.delete({
+      where: {
+        id: userId,
       },
     });
   }

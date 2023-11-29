@@ -1,8 +1,7 @@
-import { IsEmail } from 'class-validator';
+/* eslint-disable prettier/prettier */
+import { IsArray, IsEmail } from 'class-validator';
 
 export class CreateUserInput {
-  username: string;
-
   password: string;
 
   firstName: string;
@@ -12,11 +11,11 @@ export class CreateUserInput {
   @IsEmail()
   email: string;
 
-  phone: string;
+  avatarUrl: string;
 
-  address: string;
+  @IsArray()
+  roles: string;
 
-  dateOfBirth?: Date;
+  isEmailValidated: boolean;
 
-  cretedAt?: Date;
 }

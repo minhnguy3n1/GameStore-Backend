@@ -7,8 +7,19 @@ export class CreateProductDto {
   productName: string;
 
   @IsNotEmpty()
-  publisherId: number;
+  platformId: number;
 
   @IsNotEmpty()
   categoryId: number;
+
+  description?: string;
+
+  @IsNotEmpty()
+  price: number;
+
+  createdAt: Date;
+
+  stockId?: number;
+
+  image?: string
 }

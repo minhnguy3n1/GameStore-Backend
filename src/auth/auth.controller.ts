@@ -1,10 +1,9 @@
+/* eslint-disable prettier/prettier */
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Ip,
-  Param,
   Post,
   Req,
   UseGuards,
@@ -12,7 +11,8 @@ import {
 import { EmailverifyService } from 'src/emailverify/emailverify.service';
 import { UserService } from 'src/user/user.service';
 import { AuthService } from './auth.service';
-import { CheckUserInput } from './dto/check-user.input';
+import changePasswordDto from './dto/change-password.dto';
+import { EmailDto } from './dto/check-email.input';
 import { CreateUserInput } from './dto/create-user.input';
 import { LoginDto } from './dto/login.dto';
 import RefreshTokenDto from './dto/refresh-token.dto';
@@ -31,26 +31,28 @@ export class AuthController {
   @UseGuards(LocalAuthGuard)
   @Post('login')
   async login(@Req() request, @Ip() ip: string, @Body() body: LoginDto) {
-    return this.authService.login(body.username, body.password, {
+    return await this.authService.login(body.email, {
       ipAddress: ip,
       userAgent: request.headers['user-agent'],
     });
   }
 
-  @Post('checkregister')
-  async checkInputRegister(@Body() checkUserInput: CheckUserInput) {
-    return this.userService.checkCreateUser(checkUserInput);
+  @UseGuards(JwtAuthGuardApi)
+  @Get('me')
+  async reload(@Req() request) {
+    return this.userService.getUserById(request.user.userId);
   }
 
   @Post('register')
   async register(@Body() createUserInput: CreateUserInput) {
-    console.log(createUserInput);
-    await this.userService.createUser(createUserInput);
-    // await this.emailverifyService.sendEmailVerify(
-    //   createUserInput.email,
-    //   createUserInput.lastName,
-    // );
-    return 'sucessfull!';
+
+    await this.userService.createUser(
+      createUserInput,
+    );
+    this.emailverifyService.sendEmailVerify(
+      createUserInput.email,
+    );
+    return 'Register successfully!';
   }
 
   @Post('refresh')
@@ -58,23 +60,21 @@ export class AuthController {
     return this.authService.refresh(body.refreshToken);
   }
 
-  @Delete('logout')
-  async logout(@Body() body: RefreshTokenDto) {
-    return this.authService.logout(body.refreshToken);
+  @Post('forgot-password')
+  async sendMailForResetPassword(@Body() dto: EmailDto) {
+    return await this.emailverifyService.sendMailForResetPassword(dto.email);
   }
 
   @UseGuards(JwtAuthGuardApi)
-  @Post('forgot-password')
-  async sendMailForResetPassword(@Req() req) {
-    return this.authService.sendMailForResetPassword(req.user.userId);
+  @Post('change-password')
+  async resetPassWordResendToken(
+    @Req() request,
+    @Body() password: changePasswordDto,
+  ) {
+    return await this.userService.changePassword(password, request.user.userId);
   }
 
-  @Get('reset-password/:token')
-  resetPassWordResendToken(@Param('token') token) {
-    return { resetPassWordToken: token };
-  }
-
-  @Post('set-newpassword')
+  @Post('reset-password')
   async setNewPassword(@Body() setNewPasswordDto: SetNewPasswordDto) {
     return await this.userService.setNewPassword(setNewPasswordDto);
   }

@@ -1,8 +1,16 @@
+/* eslint-disable prettier/prettier */
 import { PrismaClient } from '@prisma/client';
 
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({
+  rejectOnNotFound: true,
+});
 async function main() {
   await prisma.user.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.product.deleteMany();
+  await prisma.platform.deleteMany();
+  await prisma.stockStatus.deleteMany();
+  await prisma.code.deleteMany();
 }
 main()
   .catch((e) => {

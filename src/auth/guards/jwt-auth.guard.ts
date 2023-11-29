@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { JsonWebTokenError } from 'jsonwebtoken';

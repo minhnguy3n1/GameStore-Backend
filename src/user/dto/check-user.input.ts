@@ -1,5 +1,4 @@
 export class CheckUserInput {
-  username?: string;
 
   phone?: string;
 

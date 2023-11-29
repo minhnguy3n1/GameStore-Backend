@@ -2,8 +2,6 @@
 import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class CreateUserInput {
-  @IsNotEmpty()
-  username: string;
 
   @IsNotEmpty()
   password: string;
@@ -17,13 +15,4 @@ export class CreateUserInput {
   @IsEmail()
   email: string;
 
-  @IsNotEmpty()
-  phone: string;
-
-  @IsNotEmpty()
-  address: string;
-
-  dateOfBirth?: Date;
-
-  createdAt?: Date;
 }

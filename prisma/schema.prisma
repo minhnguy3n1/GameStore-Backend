@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
 }
 
 datasource db {
@@ -11,73 +12,108 @@ datasource db {
 }
 
 model User {
-  id               Int      @id @default(autoincrement())
-  username         String   @unique
+  id               Int       @id @default(autoincrement())
   password         String
   firstName        String
-  lastName         String
-  email            String   @unique
-  isEmailValidated Boolean  @default(false)
-  phone            String   @unique
-  address          String
-  dateOfBirth      DateTime @default(now())
-  createdAt        DateTime @default(now())
-
-  roles String[] @default(["Customer"])
-}
-
-model RefeshToken {
-  id    Int    @id @default(autoincrement())
-  token String
+  lastName         String?
+  email            String    @unique
+  isEmailValidated Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  stripeCustomerId String?
+  avatarUrl        String?
+  roles            String[]  @default(["Customer"])
+  Invoice          Invoice[]
 }
 
 model Product {
   id          Int    @id @default(autoincrement())
   productName String @unique
 
-  publisherId Int
-  publisher   Publisher? @relation(fields: [publisherId], references: [id])
-
+  platformId    Int
+  platform      Platform?       @relation(fields: [platformId], references: [id])
   categoryId    Int
   category      Category?       @relation(fields: [categoryId], references: [id])
-  ProductOption ProductOption[]
+  createdAt     DateTime        @default(now())
+  image         String
+  description   String
+  price         Float
+  available     Int             @default(0)
+  stockId       Int
+  totalReview   Int         @default(0)
+  totalRating   Float          @default(0)
+  stockStatus   StockStatus     @relation(fields: [stockId], references: [id])
+  rating        Rating[]
+  review        Review[]
+  invoiceDetail InvoiceDetail[]
+  Code          Code[]
+
+  @@index([productName])
 }
 
-model Publisher {
-  id            Int       @id @default(autoincrement())
-  publisherName String    @unique
-  Product       Product[]
+model Platform {
+  id           Int       @id @default(autoincrement())
+  platformName String    @unique
+  product      Product[]
 }
 
 model Category {
   id           Int       @id @default(autoincrement())
   categoryName String    @unique
-  Product      Product[]
+  product      Product[]
 }
 
 model Code {
-  id              Int           @id @default(autoincrement())
-  code            String
-  productOptionId Int
-  productOption   ProductOption @relation(fields: [productOptionId], references: [id])
+  code      String[]
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  @@id([productId])
 }
 
-model ProductOption {
-  id               Int           @id @default(autoincrement())
-  optionName       String
-  price            Float
-  description      String
-  
-  avatar           String
-  productId        Int
-  product          Product       @relation(fields: [productId], references: [id])
-  statusId         Int
-  productStatus ProductStatus @relation(fields: [statusId], references: [id])
-  Code             Code[]
-}
-
-model ProductStatus {
-  id         Int    @id @default(autoincrement())
+model StockStatus {
+  id         Int       @id @default(autoincrement())
   statusName String
-  productOption ProductOption[]
+  product    Product[]
+}
+
+model Invoice {
+  id            Int             @id @default(autoincrement())
+  createdAt     DateTime        @default(now())
+  total         Float
+  userId        Int
+  user          User            @relation(fields: [userId], references: [id])
+  status        String?
+  invoiceDetail InvoiceDetail[]
+}
+
+model InvoiceDetail {
+  amount    Int
+  price     Float
+  code      String[]
+  invoiceId Int
+  invoice   Invoice  @relation(fields: [invoiceId], references: [id])
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+
+  @@id([invoiceId, productId])
+}
+
+model Review {
+  id           Int      @id @default(autoincrement())
+  comment      String
+  isPurchased  Boolean  @default(false)
+  rating       Int      @default(0)
+  postedAt     DateTime @default(now())
+  productId    Int
+  product      Product  @relation(fields: [productId], references: [id])
+  userFullName String
+  avatarUrl    String?
+}
+
+model Rating {
+  name      String
+  starCount Int     @default(0)
+  productId Int
+  product   Product @relation(fields: [productId], references: [id])
+
+  @@id([name, productId])
 }
